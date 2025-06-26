@@ -197,33 +197,7 @@ const handleKeyDown = (e) => {
     return "/default.png";
   };
 
-  const handleLoginSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('https://vixenhavoc-sexting-bot.hf.space/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (data.access_token) {
-        localStorage.setItem('access_token', data.access_token);
-        await supabase.auth.setSession({ access_token: data.access_token, refresh_token: data.refresh_token });
-
-        setIsAuthenticated(true);
-        setShowLogin(false);
-        setError('');
-        await fetchUserEmail();
-
-      } else {
-        setError(data.detail || 'Login failed. Please try again.');
-      }
-    } catch {
-      setError('Error logging in. Please try again later.');
-    }
-  };
-
- const handleSignupSubmit = async (e) => {
+  const handleSignupSubmit = async (e) => {
   e.preventDefault();
   setError("");
   try {
