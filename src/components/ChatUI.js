@@ -22,6 +22,9 @@ export default function ChatUI({ bot }) {
   const [hasPaid, setHasPaid] = useState(false);
   const [messageCount, setMessageCount] = useState(0);
   const [userEmail, setUserEmail] = useState(null);
+  const [showVerify, setShowVerify] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+
 const userId = userEmail || "guest"; // fallback if not logged in
 
   const tier_invoice_urls = {
@@ -220,40 +223,50 @@ const handleKeyDown = (e) => {
     }
   };
 
-  const handleSignupSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    try {
-      const res = await fetch('https://vixenhavoc-sexting-bot.hf.space/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (res.ok && data.message === "User created successfully") {
-        const loginRes = await fetch('https://vixenhavoc-sexting-bot.hf.space/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        });
-        const loginData = await loginRes.json();
-        if (loginData.access_token) {
-          localStorage.setItem('access_token', loginData.access_token);
-          await supabase.auth.setSession({ access_token: loginData.access_token, refresh_token: loginData.refresh_token });
-          setIsAuthenticated(true);
-          setShowSignup(false);
-          setError('');
-          await fetchUserEmail();
-        } else {
-          setError('Sign-up succeeded, but login failed.');
-        }
-      } else {
-        setError(data.error || data.message || 'Sign-up failed.');
-      }
-    } catch {
-      setError('Error signing up. Please try again later.');
+ const handleSignupSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  try {
+    const res = await fetch('https://vixenhavoc-sexting-bot.hf.space/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+
+    if (res.ok && data.message?.includes("verify")) {
+      // ✅ Open Verify Modal instead of logging in
+      setShowSignup(false);
+      setShowVerify(true); // 👈 you must have this modal in your JSX
+    } else {
+      setError(data.error || data.message || 'Sign-up failed.');
     }
-  };
+  } catch (err) {
+    setError('Error signing up. Please try again later.');
+  }
+};
+
+  const handleVerifySubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await fetch('https://vixenhavoc-sexting-bot.hf.space/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code: verificationCode }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert("✅ Email verified! You can now log in.");
+      setShowVerify(false);
+      setShowLogin(true);
+    } else {
+      setError(data.detail || "Verification failed");
+    }
+  } catch {
+    setError("Verification error. Try again.");
+  }
+};
+
 
   const closePaywallModal = () => setShowPaywall(false);
   const unlockAccess = () => {
@@ -449,6 +462,41 @@ const handleKeyDown = (e) => {
           </motion.div>
         </div>
       )}
+        {/* Verify Email Modal */}
+{showVerify && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="bg-[#1F1B29]/90 rounded-2xl p-8 shadow-2xl max-w-md w-full text-white relative border border-[#5A2D8C]/40"
+    >
+      <h2 className="text-3xl font-bold text-center mb-6">Verify Email</h2>
+      <form onSubmit={handleVerifySubmit}>
+        <input
+          type="text"
+          value={verifyCode}
+          onChange={(e) => setVerifyCode(e.target.value)}
+          placeholder="Enter 6-digit code"
+          required
+          className="w-full p-3 mb-4 bg-[#3A2A4D] text-white rounded-lg"
+        />
+        <button
+          type="submit"
+          className="w-full bg-[#5A2D8C] text-white px-4 py-2 rounded-lg hover:bg-[#6B3B98]"
+        >
+          Verify
+        </button>
+        {error && <div className="mt-4 text-center text-red-500">{error}</div>}
+      </form>
+
+      <div className="absolute top-4 right-4 cursor-pointer" onClick={() => setShowVerify(false)}>
+        <span className="text-lg font-bold text-[#999]">X</span>
+      </div>
+    </motion.div>
+  </div>
+)}
+
     </div>
   );
 }
