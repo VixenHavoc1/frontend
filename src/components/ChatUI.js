@@ -208,7 +208,7 @@ const handleKeyDown = (e) => {
     });
     const data = await res.json();
 
-    if (res.ok && data.message?.includes("verify")) {
+    if (res.ok && data.message?.toLowerCase().includes("please verify")) {
       // ✅ Open Verify Modal instead of logging in
       setShowSignup(false);
       setShowVerify(true); // 👈 you must have this modal in your JSX
