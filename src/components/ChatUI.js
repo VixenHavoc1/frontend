@@ -220,35 +220,38 @@ const handleKeyDown = (e) => {
   }
 };
 
-  const handleVerifySubmit = async (e) => {
+const handleVerifySubmit = async (e) => {
   e.preventDefault();
   try {
     const res = await fetch('https://vixenhavoc-sexting-bot.hf.space/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, code: verifyCode }),
-
     });
+
     const data = await res.json();
-   if (res.ok) {
-  const loginRes = await fetch('https://vixenhavoc-sexting-bot.hf.space/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-  const loginData = await loginRes.json();
 
-  if (loginRes.ok && loginData.access_token) {
-    localStorage.setItem('access_token', loginData.access_token);
-    await supabase.auth.setSession({ access_token: loginData.access_token, refresh_token: loginData.refresh_token });
-    setIsAuthenticated(true);
-    setShowVerify(false);
-    await fetchUserEmail();
-  } else {
-    setError('Verification succeeded, but login failed.');
-  }
-}
+    if (res.ok) {
+      const loginRes = await fetch('https://vixenhavoc-sexting-bot.hf.space/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
+      const loginData = await loginRes.json();
+
+      if (loginRes.ok && loginData.access_token) {
+        localStorage.setItem('access_token', loginData.access_token);
+        await supabase.auth.setSession({
+          access_token: loginData.access_token,
+          refresh_token: loginData.refresh_token,
+        });
+        setIsAuthenticated(true);
+        setShowVerify(false);
+        await fetchUserEmail();
+      } else {
+        setError('Verification succeeded, but login failed.');
+      }
     } else {
       setError(data.detail || "Verification failed");
     }
@@ -256,7 +259,6 @@ const handleKeyDown = (e) => {
     setError("Verification error. Try again.");
   }
 };
-
 
   const closePaywallModal = () => setShowPaywall(false);
   const unlockAccess = () => {
