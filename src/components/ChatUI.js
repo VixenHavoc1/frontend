@@ -201,28 +201,28 @@ const handleKeyDown = (e) => {
   e.preventDefault();
   setError("");
   try {
-    const res = await fetch('https://vixenhavoc-sexting-bot.hf.space/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("https://vixenhavoc-sexting-bot.hf.space/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
 
     const data = await res.json();
-
-    // 👇 Log the response to debug if needed
     console.log("Signup response:", data);
 
-    // ✅ If verification is required, open the verify modal
-    if (res.ok && data.message?.toLowerCase().includes("verify")) {
+    if (res.ok) {
+      // ✅ Your message includes "please verify" so this will always run
       setShowSignup(false);
-      setShowVerify(true); // ✅ opens the modal
+      setShowVerify(true);
     } else {
-      setError(data.error || data.message || "Signup failed.");
+      setError(data.detail || data.message || "Signup failed.");
     }
   } catch (err) {
-    setError("Error signing up. Please try again later.");
+    console.error("Signup error:", err);
+    setError("Something went wrong. Please try again.");
   }
 };
+
 
 const handleVerifySubmit = async (e) => {
   e.preventDefault();
