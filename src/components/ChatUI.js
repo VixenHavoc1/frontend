@@ -24,7 +24,7 @@ export default function ChatUI({ bot }) {
   const [userEmail, setUserEmail] = useState(null);
   const [showVerify, setShowVerify] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
-
+  const [verifyCode, setVerifyCode] = useState('');
 const userId = userEmail || "guest"; // fallback if not logged in
 
   const tier_invoice_urls = {
@@ -197,7 +197,7 @@ const handleKeyDown = (e) => {
     return "/default.png";
   };
 
-  const handleSignupSubmit = async (e) => {
+ const handleSignupSubmit = async (e) => {
   e.preventDefault();
   setError("");
   try {
@@ -206,17 +206,21 @@ const handleKeyDown = (e) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
+
     const data = await res.json();
 
-    if (res.ok && data.message?.toLowerCase().includes("please verify")) {
-      // ✅ Open Verify Modal instead of logging in
+    // 👇 Log the response to debug if needed
+    console.log("Signup response:", data);
+
+    // ✅ If verification is required, open the verify modal
+    if (res.ok && data.message?.toLowerCase().includes("verify")) {
       setShowSignup(false);
-      setShowVerify(true); // 👈 you must have this modal in your JSX
+      setShowVerify(true); // ✅ opens the modal
     } else {
-      setError(data.error || data.message || 'Sign-up failed.');
+      setError(data.error || data.message || "Signup failed.");
     }
   } catch (err) {
-    setError('Error signing up. Please try again later.');
+    setError("Error signing up. Please try again later.");
   }
 };
 
