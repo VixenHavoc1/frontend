@@ -157,7 +157,7 @@ console.log("Sending auth token:", headers.Authorization);  // Should show a tok
       // Also can include optional audio or image URLs
       const botMessage = {
         sender: "bot",
-        text: data.reply || "Sorry, no reply received.",
+        text: data.response || "Sorry, no reply received.",
         audio: data.audio || null,
         image: data.image || null,
       };
