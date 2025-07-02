@@ -120,7 +120,7 @@ const fetchUserEmail = async () => {
       setShowSignup(true);
       return;
     }
-    if (!hasPaid && messageCount >= 1) {
+    if (!hasPaid && messageCount >= 5) {
       setShowPaywall(true);
       return;
     }
