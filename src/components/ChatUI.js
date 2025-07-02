@@ -119,10 +119,12 @@ const sendMessage = async () => {
     setShowSignup(true);
     return;
   }
+
   if (!hasPaid && messageCount >= 5) {
     setShowPaywall(true);
     return;
   }
+
   if (!input.trim()) return;
 
   const userMessage = { sender: "user", text: input };
@@ -132,8 +134,6 @@ const sendMessage = async () => {
 
   try {
     const headers = await getAuthHeaders();
-    console.log("Sending auth token:", headers.Authorization);
-
     const res = await fetch("https://vixenhavoc-sexting-bot.hf.space/chat", {
       method: "POST",
       headers: {
@@ -147,16 +147,15 @@ const sendMessage = async () => {
       }),
     });
 
-    const data = await res.json();
-
-    // ⛔️ Handle backend 403 (access expired, payment needed)
-    if (!res.ok) {
-      if (res.status === 403 && data?.error?.includes("Access expired")) {
-        setShowPaywall(true); // ✅ Show paywall if backend says access denied
-        return;
-      }
-      throw new Error(data.error || "Failed to send message");
+    if (res.status === 403) {
+      // 🚨 Add this fallback — backend says access denied
+      setShowPaywall(true);
+      return;
     }
+
+    if (!res.ok) throw new Error("Failed to send message");
+
+    const data = await res.json();
 
     const botMessage = {
       sender: "bot",
@@ -167,16 +166,17 @@ const sendMessage = async () => {
 
     setMessages((prev) => [...prev, botMessage]);
 
-    // ✅ Always count the message unless user was blocked
     const newCount = messageCount + 1;
     setMessageCount(newCount);
     localStorage.setItem("message_count", newCount.toString());
+
   } catch (err) {
-    console.error("Message error:", err);
+    console.error(err);
   } finally {
     setIsTyping(false);
   }
 };
+
 
 const handleKeyDown = (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
