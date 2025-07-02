@@ -114,67 +114,70 @@ const fetchUserEmail = async () => {
   }
 };
 
-  
-  const sendMessage = async () => {
-    if (!isAuthenticated) {
-      setShowSignup(true);
-      return;
-    }
-    if (!hasPaid && messageCount >= 5) {
-      setShowPaywall(true);
-      return;
-    }
-    if (!input.trim()) return;
-  
-    // Add user's message immediately
-    const userMessage = { sender: "user", text: input };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsTyping(true);
-  
-    try {
-      const headers = await getAuthHeaders();
-console.log("Sending auth token:", headers.Authorization);  // Should show a token
+const sendMessage = async () => {
+  if (!isAuthenticated) {
+    setShowSignup(true);
+    return;
+  }
+  if (!hasPaid && messageCount >= 5) {
+    setShowPaywall(true);
+    return;
+  }
+  if (!input.trim()) return;
 
-      const res = await fetch("https://vixenhavoc-sexting-bot.hf.space/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(await getAuthHeaders()),
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          message: input,
-          bot_name: bot?.name || "",
-        }),
-      });
-  
-      if (!res.ok) throw new Error("Failed to send message");
-  
-      const data = await res.json();
-  
-      // Example: data should have bot reply in data.reply
-      // Also can include optional audio or image URLs
-      const botMessage = {
-        sender: "bot",
-        text: data.response || "Sorry, no reply received.",
-        audio: data.audio || null,
-        image: data.image || null,
-      };
-  
-      setMessages((prev) => [...prev, botMessage]);
-  
-      // Increment message count and save
-      const newCount = messageCount + 1;
-      setMessageCount(newCount);
-      localStorage.setItem("message_count", newCount.toString());
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsTyping(false);
+  const userMessage = { sender: "user", text: input };
+  setMessages((prev) => [...prev, userMessage]);
+  setInput("");
+  setIsTyping(true);
+
+  try {
+    const headers = await getAuthHeaders();
+    console.log("Sending auth token:", headers.Authorization);
+
+    const res = await fetch("https://vixenhavoc-sexting-bot.hf.space/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        message: input,
+        bot_name: bot?.name || "",
+      }),
+    });
+
+    const data = await res.json();
+
+    // ⛔️ Handle backend 403 (access expired, payment needed)
+    if (!res.ok) {
+      if (res.status === 403 && data?.error?.includes("Access expired")) {
+        setShowPaywall(true); // ✅ Show paywall if backend says access denied
+        return;
+      }
+      throw new Error(data.error || "Failed to send message");
     }
-  };
-  
+
+    const botMessage = {
+      sender: "bot",
+      text: data.response || "Sorry, no reply received.",
+      audio: data.audio || null,
+      image: data.image || null,
+    };
+
+    setMessages((prev) => [...prev, botMessage]);
+
+    // ✅ Always count the message unless user was blocked
+    const newCount = messageCount + 1;
+    setMessageCount(newCount);
+    localStorage.setItem("message_count", newCount.toString());
+  } catch (err) {
+    console.error("Message error:", err);
+  } finally {
+    setIsTyping(false);
+  }
+};
+
 const handleKeyDown = (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault(); // prevent newline on Enter
