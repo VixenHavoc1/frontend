@@ -264,6 +264,8 @@ const handleVerifySubmit = async (e) => {
   }
 };
 
+  
+
   const closePaywallModal = () => setShowPaywall(false);
   const unlockAccess = () => {
     localStorage.setItem("has_paid", "true");
@@ -295,6 +297,40 @@ const handleVerifySubmit = async (e) => {
       alert("Failed to initiate payment.");
     }
   };  
+
+  const handleLoginSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+
+  try {
+    const res = await fetch("https://vixenhavoc-sexting-bot.hf.space/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.access_token) {
+      localStorage.setItem("access_token", data.access_token);
+
+      await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      });
+
+      setIsAuthenticated(true);
+      setShowLogin(false);
+      await fetchUserEmail();
+    } else {
+      setError(data.detail || "Login failed.");
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    setError("Something went wrong. Please try again.");
+  }
+};
+
   
   return (
     <div className="flex flex-col h-screen bg-[#2C1F3D] text-white">
