@@ -133,46 +133,49 @@ const sendMessage = async () => {
   setIsTyping(true);
 
   try {
-    const headers = await getAuthHeaders();
-    const res = await fetch("https://vixenhavoc-sexting-bot.hf.space/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...headers,
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        message: input,
-        bot_name: bot?.name || "",
-      }),
-    });
+  const headers = await getAuthHeaders();
 
-    if (res.status === 403) {
-      // 🚨 Add this fallback — backend says access denied
-      setShowPaywall(true);
-      return;
-    }
+  const res = await fetch("https://vixenhavoc-sexting-bot.hf.space/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...headers,
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      message: input,
+      bot_name: bot?.name || "",
+    }),
+  });
 
-    if (!res.ok) throw new Error("Failed to send message");
+  if (res.status === 403) {
+    console.log("🚫 403 Forbidden from backend — triggering paywall");
+    setShowPaywall(true);
+    return;
+  }
 
-    const data = await res.json();
+  if (!res.ok) {
+    const errData = await res.json();
+    throw new Error(errData.error || "Failed to send message");
+  }
 
-    const botMessage = {
-      sender: "bot",
-      text: data.response || "Sorry, no reply received.",
-      audio: data.audio || null,
-      image: data.image || null,
-    };
+  const data = await res.json();
 
-    setMessages((prev) => [...prev, botMessage]);
+  const botMessage = {
+    sender: "bot",
+    text: data.response || "Sorry, no reply received.",
+    audio: data.audio || null,
+    image: data.image || null,
+  };
 
-    const newCount = messageCount + 1;
-    setMessageCount(newCount);
-    localStorage.setItem("message_count", newCount.toString());
+  setMessages((prev) => [...prev, botMessage]);
 
-  } catch (err) {
-    console.error(err);
-  } finally {
+  const newCount = messageCount + 1;
+  setMessageCount(newCount);
+  localStorage.setItem("message_count", newCount.toString());
+} catch (err) {
+  console.error("Message error:", err);
+} finally {
     setIsTyping(false);
   }
 };
