@@ -63,17 +63,18 @@ const PAYMENT_BACKEND_URL = "https://nowments.vercel.app";
       if (paid === "true") setHasPaid(true);
   
       try {
-        const res = await fetch(`${PAYMENT_BACKEND_URL}/pay/${user_id}/${tier_id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (res.ok && data.has_paid) {
-          localStorage.setItem("has_paid", "true");
-          setHasPaid(true);
-        }
-      } catch (err) {
-        console.error("Failed to check payment status:", err);
-      }
+  const res = await fetch(`${PAYMENT_BACKEND_URL}/api/payment-status`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  if (res.ok && data.has_paid) {
+    localStorage.setItem("has_paid", "true");
+    setHasPaid(true);
+  }
+} catch (err) {
+  console.error("Failed to check payment status:", err);
+}
+
     };
     initializeUser();
   }, []);
