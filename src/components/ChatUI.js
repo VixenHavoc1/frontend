@@ -277,29 +277,32 @@ const handleVerifySubmit = async (e) => {
   };
 
   const handleTierClick = async (tier_id) => {
-    const user_id = userId || "guest";
-  
-    try {
-      const authHeaders = await getAuthHeaders();
-  
-      const res = await fetch(`${PAYMENT_BACKEND_URL}/api/pay/${user_id}/${tier_id}`, {
-        method: "POST",
-        headers: {
-          ...authHeaders,
-        },
-      });
-  
-      const data = await res.json();
-  
-      if (res.ok && data.payment_link) {
-        window.location.href = data.payment_link;
-      } else {
-        alert("Payment creation failed.");
-      }
-    } catch (err) {
-      alert("Failed to initiate payment.");
+  const user_id = userId || "guest";
+
+  try {
+    const authHeaders = await getAuthHeaders();
+
+    const res = await fetch(`${PAYMENT_BACKEND_URL}/api/create-invoice`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders,
+      },
+      body: JSON.stringify({ user_id, tier_id }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.payment_link) {
+      window.location.href = data.payment_link;
+    } else {
+      alert("Payment creation failed.");
     }
-  };  
+  } catch (err) {
+    console.error("Payment error:", err);
+    alert("Failed to initiate payment.");
+  }
+};
 
   const handleLoginSubmit = async (e) => {
   e.preventDefault();
