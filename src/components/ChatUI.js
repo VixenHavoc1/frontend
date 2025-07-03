@@ -26,13 +26,10 @@ export default function ChatUI({ bot }) {
   const [verificationCode, setVerificationCode] = useState('');
   const [verifyCode, setVerifyCode] = useState('');
 const userId = userEmail || "guest"; // fallback if not logged in
+const CHAT_BACKEND_URL = "https://vixenhavoc-sexting-bot.hf.space";
+const PAYMENT_BACKEND_URL = "https://nowments.vercel.app";
 
-  const tier_invoice_urls = {
-    "tier1": "https://nowpayments.io/payment/?iid=4369068932",
-    "tier2": "https://nowpayments.io/payment/?iid=4754412040",
-    "tier3": "https://nowpayments.io/payment/?iid=4621986133"
-  };
-  
+ 
   const getSession = async () => {
   const token = localStorage.getItem("access_token");
   return token ? { access_token: token } : null;
@@ -66,7 +63,7 @@ const userId = userEmail || "guest"; // fallback if not logged in
       if (paid === "true") setHasPaid(true);
   
       try {
-        const res = await fetch("https://vixenhavoc-sexting-bot.hf.space/payment-status", {
+        const res = await fetch("${PAYMENT_BACKEND_URL}/payment-status", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -285,7 +282,7 @@ const handleVerifySubmit = async (e) => {
     try {
       const authHeaders = await getAuthHeaders();
   
-      const res = await fetch(`https://vixenhavoc-sexting-bot.hf.space/pay/${user_id}/${tier_id}`, {
+      const res = await fetch(`${PAYMENT_BACKEND_URL}/pay/${user_id}/${tier_id}`, {
         method: "POST",
         headers: {
           ...authHeaders,
