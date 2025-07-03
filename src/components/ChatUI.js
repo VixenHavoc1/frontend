@@ -63,7 +63,7 @@ const PAYMENT_BACKEND_URL = "https://nowments.vercel.app";
       if (paid === "true") setHasPaid(true);
   
       try {
-        const res = await fetch("${PAYMENT_BACKEND_URL}/payment-status", {
+        const res = await fetch("${PAYMENT_BACKEND_URL}/api/payment-status", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -282,7 +282,7 @@ const handleVerifySubmit = async (e) => {
     try {
       const authHeaders = await getAuthHeaders();
   
-      const res = await fetch(`${PAYMENT_BACKEND_URL}/pay/${user_id}/${tier_id}`, {
+      const res = await fetch(`${PAYMENT_BACKEND_URL}/api/pay/${user_id}/${tier_id}`, {
         method: "POST",
         headers: {
           ...authHeaders,
