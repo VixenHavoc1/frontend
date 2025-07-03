@@ -299,7 +299,7 @@ const handleVerifySubmit = async (e) => {
       alert("Payment creation failed.");
     }
   } catch (err) {
-    console.error("Payment error:", err);
+    console.error("Invoice error:", err);
     alert("Failed to initiate payment.");
   }
 };
