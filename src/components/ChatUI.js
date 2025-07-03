@@ -279,6 +279,12 @@ const handleVerifySubmit = async (e) => {
 
   const handleTierClick = async (tier_id) => {
   const user_id = userId || "guest";
+  const priceMap = {
+    tier1: 5,
+    tier2: 10,
+    tier3: 20,
+  };
+  const price_amount = priceMap[tier_id] || 5;
 
   try {
     const authHeaders = await getAuthHeaders();
@@ -289,7 +295,7 @@ const handleVerifySubmit = async (e) => {
         "Content-Type": "application/json",
         ...authHeaders,
       },
-      body: JSON.stringify({ user_id, tier_id }),
+      body: JSON.stringify({ user_id, tier_id, price_amount }),
     });
 
     const data = await res.json();
@@ -298,6 +304,7 @@ const handleVerifySubmit = async (e) => {
       window.location.href = data.payment_link;
     } else {
       alert("Payment creation failed.");
+      console.error("Invoice error:", data);
     }
   } catch (err) {
     console.error("Invoice error:", err);
