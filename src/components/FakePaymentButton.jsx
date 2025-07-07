@@ -18,7 +18,7 @@ export default function FakePaymentButton({ userEmail }) {
           payment_status: "confirmed",
           pay_address: "fake123",
           price_amount: 5,
-          order_id: `tier1:${userEmail}`,
+          order_id: `${userEmail}:tier1`, // ✅ correct format for backend
           payment_id: Math.floor(Math.random() * 1000000)
         })
       });
