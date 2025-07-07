@@ -5,6 +5,7 @@ import AudioWave from "./AudioWave";
 import PremiumModal from './PremiumModal';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient'
+import FakePaymentButton from "./FakePaymentButton";
 export default function ChatUI({ bot }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -403,6 +404,7 @@ const handleVerifySubmit = async (e) => {
         >
           Send
         </button>
+             <FakePaymentButton userEmail={userEmail} />
       </div>
 
       {/* Paywall Modal */}
@@ -508,6 +510,7 @@ const handleVerifySubmit = async (e) => {
           </motion.div>
         </div>
       )}
+
         {/* Verify Email Modal */}
 {showVerify && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
