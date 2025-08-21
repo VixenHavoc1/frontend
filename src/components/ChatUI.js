@@ -27,8 +27,8 @@ export default function ChatUI({ bot }) {
   const [verificationCode, setVerificationCode] = useState('');
   const [verifyCode, setVerifyCode] = useState('');
 const userId = userEmail || "guest"; // fallback if not logged in
-const CHAT_BACKEND_URL = "https://vixenhavoc-sexting-bot.hf.space";
-const PAYMENT_BACKEND_URL = "https://nowments.vercel.app";
+const CHAT_BACKEND_URL = "https://api.voxellaai.site";
+
 
  
   const getSession = async () => {
@@ -101,7 +101,7 @@ const fetchUserEmail = async () => {
   const token = localStorage.getItem("access_token");
   if (!token) return;
   try {
-    const res = await fetch("https://vixenhavoc-sexting-bot.hf.space/me", {
+    const res = await fetch("https://api.voxellaai.site/me", {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
@@ -134,7 +134,7 @@ const sendMessage = async () => {
   try {
   const headers = await getAuthHeaders();
 
-  const res = await fetch("https://vixenhavoc-sexting-bot.hf.space/chat", {
+  const res = await fetch("https://api.voxellaai.site/chat", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -206,7 +206,7 @@ const handleKeyDown = (e) => {
   e.preventDefault();
   setError("");
   try {
-    const res = await fetch("https://vixenhavoc-sexting-bot.hf.space/signup", {
+    const res = await fetch("https://api.voxellaai.site/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -232,7 +232,7 @@ const handleKeyDown = (e) => {
 const handleVerifySubmit = async (e) => {
   e.preventDefault();
   try {
-    const res = await fetch('https://vixenhavoc-sexting-bot.hf.space/verify', {
+    const res = await fetch('https://api.voxellaai.site/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, code: verifyCode }),
@@ -241,7 +241,7 @@ const handleVerifySubmit = async (e) => {
     const data = await res.json();
 
     if (res.ok) {
-      const loginRes = await fetch('https://vixenhavoc-sexting-bot.hf.space/login', {
+      const loginRes = await fetch('https://api.voxellaai.site/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -318,7 +318,7 @@ const handleVerifySubmit = async (e) => {
   setError("");
 
   try {
-    const res = await fetch("https://vixenhavoc-sexting-bot.hf.space/login", {
+    const res = await fetch("https://api.voxellaai.site/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
