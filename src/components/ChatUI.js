@@ -251,10 +251,6 @@ const handleVerifySubmit = async (e) => {
 
       if (loginRes.ok && loginData.access_token) {
         localStorage.setItem('access_token', loginData.access_token);
-        await supabase.auth.setSession({
-          access_token: loginData.access_token,
-          refresh_token: loginData.refresh_token,
-        });
         setIsAuthenticated(true);
         setShowVerify(false);
         await fetchUserEmail();
@@ -328,12 +324,6 @@ const handleVerifySubmit = async (e) => {
 
     if (res.ok && data.access_token) {
       localStorage.setItem("access_token", data.access_token);
-
-      await supabase.auth.setSession({
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-      });
-
       setIsAuthenticated(true);
       setShowLogin(false);
       await fetchUserEmail();
