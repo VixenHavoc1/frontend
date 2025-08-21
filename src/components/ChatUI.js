@@ -28,7 +28,7 @@ export default function ChatUI({ bot }) {
   const [verifyCode, setVerifyCode] = useState('');
 const userId = userEmail || "guest"; // fallback if not logged in
 const CHAT_BACKEND_URL = "https://api.voxellaai.site";
-
+const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
 
  
   const getSession = async () => {
