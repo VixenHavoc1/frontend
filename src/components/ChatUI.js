@@ -64,13 +64,15 @@ const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
       if (paid === "true") setHasPaid(true);
   
       try {
-  const res = await fetch(`${PAYMENT_BACKEND_URL}/api/payment-status`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const data = await res.json();
-  if (res.ok && data.has_paid) {
-    localStorage.setItem("has_paid", "true");
-    setHasPaid(true);
+ const res = await fetch(`${PAYMENT_BACKEND_URL}/me`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
+const data = await res.json();
+if (res.ok) {
+  localStorage.setItem("user_email", data.email);
+  localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
+  localStorage.setItem("tier_id", data.tier_id || "");
+  setHasPaid(data.has_paid);
   }
 } catch (err) {
   console.error("Failed to check payment status:", err);
