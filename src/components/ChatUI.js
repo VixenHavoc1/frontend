@@ -6,6 +6,7 @@ import PremiumModal from './PremiumModal';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient'
 import FakePaymentButton from "./FakePaymentButton";
+import apiFetch from "./api";
 export default function ChatUI({ bot }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -103,9 +104,8 @@ const fetchUserEmail = async () => {
   const token = localStorage.getItem("access_token");
   if (!token) return;
   try {
-    const res = await fetch("https://api.voxellaai.site/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    
+    const res = await apiFetch("/me");
     const data = await res.json();
     if (res.ok && data.email) {
       setUserEmail(data.email);
@@ -136,18 +136,14 @@ const sendMessage = async () => {
   try {
   const headers = await getAuthHeaders();
 
-  const res = await fetch("https://api.voxellaai.site/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
-    body: JSON.stringify({
-      user_id: userId,
-      message: input,
-      bot_name: bot?.name || "",
-    }),
-  });
+ const res = await apiFetch("/chat", {
+  method: "POST",
+  body: JSON.stringify({
+    user_id: userId,
+    message: input,
+    bot_name: bot?.name || "",
+  }),
+});
 
   if (res.status === 403) {
     console.log("🚫 403 Forbidden from backend — triggering paywall");
@@ -208,11 +204,11 @@ const handleKeyDown = (e) => {
   e.preventDefault();
   setError("");
   try {
-    const res = await fetch("https://api.voxellaai.site/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+  const res = await apiFetch("/signup", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email, password }),
+});
 
     const data = await res.json();
     console.log("Signup response:", data);
@@ -234,20 +230,22 @@ const handleKeyDown = (e) => {
 const handleVerifySubmit = async (e) => {
   e.preventDefault();
   try {
-    const res = await fetch('https://api.voxellaai.site/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code: verifyCode }),
-    });
+    const res = await apiFetch('/verify', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, code: verifyCode }),
+});
+
 
     const data = await res.json();
 
     if (res.ok) {
-      const loginRes = await fetch('https://api.voxellaai.site/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+     const res = await apiFetch("/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email, password }),
+});
+
 
       const loginData = await loginRes.json();
 
@@ -287,15 +285,15 @@ const handleVerifySubmit = async (e) => {
 
   try {
     const authHeaders = await getAuthHeaders();
+const res = await apiFetch("/api/create-invoice", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    ...authHeaders,
+  },
+  body: JSON.stringify({ user_id, tier_id, price_amount }),
+});
 
-    const res = await fetch(`${PAYMENT_BACKEND_URL}/api/create-invoice`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders,
-      },
-      body: JSON.stringify({ user_id, tier_id, price_amount }),
-    });
 
     const data = await res.json();
 
