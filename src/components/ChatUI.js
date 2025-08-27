@@ -65,9 +65,8 @@ const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
       if (paid === "true") setHasPaid(true);
   
       try {
- const res = await fetch(`${PAYMENT_BACKEND_URL}/me`, {
-  headers: { Authorization: `Bearer ${token}` },
-});
+const res = await apiFetch("/me");
+
 const data = await res.json();
 if (res.ok) {
   localStorage.setItem("user_email", data.email);
@@ -314,11 +313,12 @@ const res = await apiFetch("/api/create-invoice", {
   setError("");
 
   try {
-    const res = await fetch("https://api.voxellaai.site/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    const res = await apiFetch("/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email, password }),
+});
+
 
     const data = await res.json();
 
