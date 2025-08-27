@@ -6,7 +6,8 @@ import PremiumModal from './PremiumModal';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient'
 import FakePaymentButton from "./FakePaymentButton";
-import apiFetch from "./api";
+import apiFetch from "../api";
+
 export default function ChatUI({ bot }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
