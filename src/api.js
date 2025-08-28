@@ -42,11 +42,13 @@ async function apiFetch(endpoint, options = {}) {
       }
     }
 
-    return res;
+    // 👇 Always return parsed JSON
+    return res.json();
   } catch (err) {
     console.error("API error:", err);
     throw err;
   }
 }
+
 
 export default apiFetch;
