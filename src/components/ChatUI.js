@@ -66,9 +66,9 @@ const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
       if (paid === "true") setHasPaid(true);
   
       try {
-const res = await apiFetch("/me");
-
+const res = await apiFetch("/me", { method: "GET" });
 const data = await res.json();
+
 if (res.ok) {
   localStorage.setItem("user_email", data.email);
   localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
@@ -105,8 +105,8 @@ const fetchUserEmail = async () => {
   if (!token) return;
   try {
     
-    const res = await apiFetch("/me");
-    const data = await res.json();
+   const res = await apiFetch("/me", { method: "GET" });
+const data = await res.json();
     if (res.ok && data.email) {
       setUserEmail(data.email);
     }
@@ -247,7 +247,9 @@ const handleVerifySubmit = async (e) => {
 });
 
 
-      const loginData = await loginRes.json();
+      const loginRes = await apiFetch("/login", {...});
+const loginData = await loginRes.json();
+
 
       if (loginRes.ok && loginData.access_token) {
         localStorage.setItem('access_token', loginData.access_token);
@@ -322,13 +324,14 @@ const res = await apiFetch("/api/create-invoice", {
 
 
     const data = await res.json();
+     if (res.ok && data.access_token) {
+  localStorage.setItem("access_token", data.access_token);
+  setIsAuthenticated(true);
+  setShowLogin(false);
+  await fetchUserEmail();
+}
 
-    if (res.ok && data.access_token) {
-      localStorage.setItem("access_token", data.access_token);
-      setIsAuthenticated(true);
-      setShowLogin(false);
-      await fetchUserEmail();
-    } else {
+     else {
       setError(data.detail || "Login failed.");
     }
   } catch (err) {
