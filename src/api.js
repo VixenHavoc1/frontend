@@ -18,11 +18,8 @@ async function apiFetch(endpoint, options = {}) {
     if (res.status === 401) {
       const data = await res.json();
       if (data.detail && data.detail.includes("Token has expired")) {
-        // Try refreshing token
         const refreshToken = localStorage.getItem("refresh_token");
-        if (!refreshToken) {
-          throw new Error("No refresh token found");
-        }
+        if (!refreshToken) throw new Error("No refresh token found");
 
         const refreshRes = await fetch(`${API_URL}/refresh`, {
           method: "POST",
@@ -30,20 +27,19 @@ async function apiFetch(endpoint, options = {}) {
           body: JSON.stringify({ refresh_token: refreshToken }),
         });
 
-        if (!refreshRes.ok) {
-          throw new Error("Failed to refresh token");
-        }
+        if (!refreshRes.ok) throw new Error("Failed to refresh token");
 
         const refreshData = await refreshRes.json();
         localStorage.setItem("token", refreshData.access_token);
 
-        // Retry the original request with new token
         return apiFetch(endpoint, options);
       }
     }
 
-    // 👇 Always return parsed JSON
-    return res.json();
+    // 🔥 Always return parsed JSON
+    const data = await res.json().catch(() => null);
+    return { ok: res.ok, status: res.status, data };
+
   } catch (err) {
     console.error("API error:", err);
     throw err;
