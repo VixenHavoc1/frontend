@@ -60,11 +60,22 @@ const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
       const token = session?.access_token;
       if (!token) return;
   
-      const paid = localStorage.getItem("has_paid");
-      setIsAuthenticated(true);
-      await fetchUserEmail();
-      if (paid === "true") setHasPaid(true);
-  
+     setIsAuthenticated(true);
+try {
+  const res = await apiFetch("/me", { method: "GET" });
+  const data = await res.json();
+  if (res.ok) {
+    setUserEmail(data.email);
+    setHasPaid(data.has_paid);
+    localStorage.setItem("user_email", data.email);
+    localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
+    localStorage.setItem("tier_id", data.tier_id || "");
+  }
+} catch (err) {
+  console.error("Failed to fetch user info:", err);
+}
+
+      
       try {
 const res = await apiFetch("/me", { method: "GET" });
 const data = await res.json();
@@ -101,8 +112,9 @@ if (res.ok) {
 };
 
 const fetchUserEmail = async () => {
-  const token = localStorage.getItem("access_token");
-  if (!token) return;
+  const token = localStorage.getItem("token");
+if (!token) return;
+
   try {
     
    const res = await apiFetch("/me", { method: "GET" });
@@ -240,19 +252,20 @@ const handleVerifySubmit = async (e) => {
     const data = await res.json();
 
     if (res.ok) {
-     const res = await apiFetch("/login", {
+     const loginRes = await apiFetch("/login", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ email, password }),
 });
-
-
-      const loginRes = await apiFetch("/login", {...});
 const loginData = await loginRes.json();
 
 
       if (loginRes.ok && loginData.access_token) {
-        localStorage.setItem('access_token', loginData.access_token);
+        localStorage.setItem("token", data.access_token);
+if (data.refresh_token) {
+  localStorage.setItem("refresh_token", data.refresh_token);
+}
+
         setIsAuthenticated(true);
         setShowVerify(false);
         await fetchUserEmail();
