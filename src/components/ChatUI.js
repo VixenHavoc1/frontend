@@ -76,14 +76,12 @@ if (ok) {
 
       
       try {
-const res = await apiFetch("/me", { method: "GET" });
-const data = await res.json();
-
-if (res.ok) {
-  localStorage.setItem("user_email", data.email);
-  localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
-  localStorage.setItem("tier_id", data.tier_id || "");
-  setHasPaid(data.has_paid);
+const { ok, data } = await apiFetch("/me", { method: "GET" });
+  if (ok) {
+    localStorage.setItem("user_email", data.email);
+    localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
+    localStorage.setItem("tier_id", data.tier_id || "");
+    setHasPaid(data.has_paid);
   }
 } catch (err) {
   console.error("Failed to check payment status:", err);
@@ -247,26 +245,24 @@ const handleVerifySubmit = async (e) => {
 });
 
    if (ok) {
-  const { ok: loginOk, data: loginData } = await apiFetch("/login",  {
+  const { ok: loginOk, data: loginData } = await apiFetch("/login", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ email, password }),
 });
 
-
-
-      if (loginRes.ok && loginData.access_token) {
-        localStorage.setItem("token", data.access_token);
-if (data.refresh_token) {
-  localStorage.setItem("refresh_token", data.refresh_token);
+if (loginOk && loginData.access_token) {
+  localStorage.setItem("token", loginData.access_token);
+  if (loginData.refresh_token) {
+    localStorage.setItem("refresh_token", loginData.refresh_token);
+  }
+  setIsAuthenticated(true);
+  setShowVerify(false);
+  await fetchUserEmail();
+} else {
+  setError("Verification succeeded, but login failed.");
 }
 
-        setIsAuthenticated(true);
-        setShowVerify(false);
-        await fetchUserEmail();
-      } else {
-        setError('Verification succeeded, but login failed.');
-      }
     } else {
       setError(data.detail || "Verification failed");
     }
