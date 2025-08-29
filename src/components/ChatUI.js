@@ -62,11 +62,10 @@ const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
   
      setIsAuthenticated(true);
 try {
-  const res = await apiFetch("/me", { method: "GET" });
-  const data = await res.json();
-  if (res.ok) {
-    setUserEmail(data.email);
-    setHasPaid(data.has_paid);
+  const { ok, data } = await apiFetch("/me", { method: "GET" });
+if (ok) {
+  setUserEmail(data.email);
+  setHasPaid(data.has_paid);
     localStorage.setItem("user_email", data.email);
     localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
     localStorage.setItem("tier_id", data.tier_id || "");
@@ -117,11 +116,11 @@ if (!token) return;
 
   try {
     
-   const res = await apiFetch("/me", { method: "GET" });
-const data = await res.json();
-    if (res.ok && data.email) {
-      setUserEmail(data.email);
-    }
+   const { ok, data } = await apiFetch("/me", { method: "GET" });
+if (ok && data.email) {
+  setUserEmail(data.email);
+}
+
   } catch (err) {
     console.error("Failed to fetch user email", err);
   }
@@ -164,11 +163,11 @@ const sendMessage = async () => {
   }
 
   if (!res.ok) {
-    const errData = await res.json();
-    throw new Error(errData.error || "Failed to send message");
-  }
+  throw new Error(res.data?.error || "Failed to send message");
+}
 
-  const data = await res.json();
+const data = res.data;
+
 
   const botMessage = {
     sender: "bot",
@@ -216,22 +215,21 @@ const handleKeyDown = (e) => {
   e.preventDefault();
   setError("");
   try {
-  const res = await apiFetch("/signup", {
+  const { ok, data } = await apiFetch("/signup", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ email, password }),
 });
 
-    const data = await res.json();
+   
     console.log("Signup response:", data);
 
-    if (res.ok) {
-      // ✅ Your message includes "please verify" so this will always run
-      setShowSignup(false);
-      setShowVerify(true);
-    } else {
-      setError(data.detail || data.message || "Signup failed.");
-    }
+    if (ok) {
+  setShowSignup(false);
+  setShowVerify(true);
+} else {
+  setError(data?.detail || data?.message || "Signup failed.");
+}
   } catch (err) {
     console.error("Signup error:", err);
     setError("Something went wrong. Please try again.");
@@ -242,22 +240,19 @@ const handleKeyDown = (e) => {
 const handleVerifySubmit = async (e) => {
   e.preventDefault();
   try {
-    const res = await apiFetch('/verify', {
+ const { ok, data } = await apiFetch('/verify', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ email, code: verifyCode }),
 });
 
-
-    const data = await res.json();
-
-    if (res.ok) {
-     const loginRes = await apiFetch("/login", {
+   if (ok) {
+  const { ok: loginOk, data: loginData } = await apiFetch("/login",  {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ email, password }),
 });
-const loginData = await loginRes.json();
+
 
 
       if (loginRes.ok && loginData.access_token) {
@@ -300,7 +295,7 @@ if (data.refresh_token) {
 
   try {
     const authHeaders = await getAuthHeaders();
-const res = await apiFetch("/api/create-invoice", {
+const { ok, data } = await apiFetch("/api/create-invoice", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -310,11 +305,12 @@ const res = await apiFetch("/api/create-invoice", {
 });
 
 
-    const data = await res.json();
+    
 
-    if (res.ok && data.payment_link) {
-      window.location.href = data.payment_link;
-    } else {
+    if (ok && data?.payment_link) {
+  window.location.href = data.payment_link;
+}
+ else {
       alert("Payment creation failed.");
       console.error("Invoice error:", data);
     }
@@ -329,15 +325,12 @@ const res = await apiFetch("/api/create-invoice", {
   setError("");
 
   try {
-    const res = await apiFetch("/login", {
+    const { ok, data } = await apiFetch("/login", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ email, password }),
 });
-
-
-    const data = await res.json();
-     if (res.ok && data.access_token) {
+     if (ok && data?.access_token) {
   localStorage.setItem("access_token", data.access_token);
   setIsAuthenticated(true);
   setShowLogin(false);
