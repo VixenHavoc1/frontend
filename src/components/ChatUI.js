@@ -61,11 +61,12 @@ const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
       if (!token) return;
   
      setIsAuthenticated(true);
-try {
+
+     try {
   const { ok, data } = await apiFetch("/me", { method: "GET" });
-if (ok) {
-  setUserEmail(data.email);
-  setHasPaid(data.has_paid);
+  if (ok && data) {
+    setUserEmail(data.email);
+    setHasPaid(data.has_paid);
     localStorage.setItem("user_email", data.email);
     localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
     localStorage.setItem("tier_id", data.tier_id || "");
@@ -74,18 +75,6 @@ if (ok) {
   console.error("Failed to fetch user info:", err);
 }
 
-      
-      try {
-const { ok, data } = await apiFetch("/me", { method: "GET" });
-  if (ok) {
-    localStorage.setItem("user_email", data.email);
-    localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
-    localStorage.setItem("tier_id", data.tier_id || "");
-    setHasPaid(data.has_paid);
-  }
-} catch (err) {
-  console.error("Failed to check payment status:", err);
-}
 
     };
     initializeUser();
@@ -145,7 +134,7 @@ const sendMessage = async () => {
   try {
   const headers = await getAuthHeaders();
 
- const res = await apiFetch("/chat", {
+ const { ok, status, data } = await apiFetch("/chat", {
   method: "POST",
   body: JSON.stringify({
     user_id: userId,
@@ -154,25 +143,23 @@ const sendMessage = async () => {
   }),
 });
 
-  if (res.status === 403) {
-    console.log("🚫 403 Forbidden from backend — triggering paywall");
-    setShowPaywall(true);
-    return;
-  }
-
-  if (!res.ok) {
-  throw new Error(res.data?.error || "Failed to send message");
+if (status === 403) {
+  console.log("🚫 403 Forbidden — triggering paywall");
+  setShowPaywall(true);
+  return;
 }
 
-const data = res.data;
+if (!ok) {
+  throw new Error(data?.error || "Failed to send message");
+}
 
+const botMessage = {
+  sender: "bot",
+  text: data?.response || "Sorry, no reply received.",
+  audio: data?.audio || null,
+  image: data?.image || null,
+};
 
-  const botMessage = {
-    sender: "bot",
-    text: data.response || "Sorry, no reply received.",
-    audio: data.audio || null,
-    image: data.image || null,
-  };
 
   setMessages((prev) => [...prev, botMessage]);
 
@@ -215,7 +202,6 @@ const handleKeyDown = (e) => {
   try {
   const { ok, data } = await apiFetch("/signup", {
   method: "POST",
-  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ email, password }),
 });
 
@@ -240,7 +226,6 @@ const handleVerifySubmit = async (e) => {
   try {
  const { ok, data } = await apiFetch('/verify', {
   method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ email, code: verifyCode }),
 });
 
@@ -334,7 +319,7 @@ const { ok, data } = await apiFetch("/api/create-invoice", {
 }
 
      else {
-      setError(data.detail || "Login failed.");
+      setError(data?.detail || data?.message || "Login failed.");
     }
   } catch (err) {
     console.error("Login error:", err);
