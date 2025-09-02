@@ -132,43 +132,45 @@ const sendMessage = async () => {
   setIsTyping(true);
 
   try {
-  const headers = await getAuthHeaders();
+    const headers = await getAuthHeaders();
 
- const { ok, status, data } = await apiFetch("/chat", {
-  method: "POST",
-  body: JSON.stringify({
-    user_id: userId,
-    message: input,
-    bot_name: bot?.name || "",
-  }),
-});
+    const { ok, status, data } = await apiFetch("/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",   // ✅ required
+        ...headers,                           // ✅ Authorization
+      },
+      body: JSON.stringify({
+        message: input,                       // ✅ required
+        bot_name: bot?.name || "Default",     // ✅ optional
+      }),
+    });
 
-if (status === 403) {
-  console.log("🚫 403 Forbidden — triggering paywall");
-  setShowPaywall(true);
-  return;
-}
+    if (status === 403) {
+      console.log("🚫 403 Forbidden — triggering paywall");
+      setShowPaywall(true);
+      return;
+    }
 
-if (!ok) {
-  throw new Error(data?.error || "Failed to send message");
-}
+    if (!ok) {
+      throw new Error(data?.error || "Failed to send message");
+    }
 
-const botMessage = {
-  sender: "bot",
-  text: data?.response || "Sorry, no reply received.",
-  audio: data?.audio || null,
-  image: data?.image || null,
-};
+    const botMessage = {
+      sender: "bot",
+      text: data?.response || "Sorry, no reply received.",
+      audio: data?.audio || null,
+      image: data?.image || null,
+    };
 
+    setMessages((prev) => [...prev, botMessage]);
 
-  setMessages((prev) => [...prev, botMessage]);
-
-  const newCount = messageCount + 1;
-  setMessageCount(newCount);
-  localStorage.setItem("message_count", newCount.toString());
-} catch (err) {
-  console.error("Message error:", err);
-} finally {
+    const newCount = messageCount + 1;
+    setMessageCount(newCount);
+    localStorage.setItem("message_count", newCount.toString());
+  } catch (err) {
+    console.error("Message error:", err);
+  } finally {
     setIsTyping(false);
   }
 };
