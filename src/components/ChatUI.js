@@ -140,10 +140,11 @@ const sendMessage = async () => {
         "Content-Type": "application/json",   // ✅ required
         ...headers,                           // ✅ Authorization
       },
-      body: JSON.stringify({
-        message: input,                       // ✅ required
-        bot_name: bot?.name || "Default",     // ✅ optional
-      }),
+      body: {
+  message: input,
+  bot_name: bot?.name || "Default",
+},
+
     });
 
     if (status === 403) {
