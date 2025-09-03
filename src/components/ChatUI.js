@@ -106,7 +106,11 @@ if (!token) return;
 
   try {
     
-   const { ok, data } = await apiFetch("/me", { method: "GET" });
+  const { ok, data } = await apiFetch("/me", {
+  method: "GET",
+  headers: await getAuthHeaders(),
+});
+
 if (ok && data.email) {
   setUserEmail(data.email);
 }
