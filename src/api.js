@@ -1,9 +1,8 @@
-// api.js
 const API_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "https://api.voxellaai.site";
 
 async function apiFetch(endpoint, options = {}) {
-  const token = localStorage.getItem("token");
+  let token = localStorage.getItem("access_token");
   const headers = {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -11,12 +10,12 @@ async function apiFetch(endpoint, options = {}) {
   };
 
   try {
-    const res = await fetch(`${API_URL}${endpoint}`, {
+    let res = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       headers,
     });
 
-    // Handle expired access token → refresh
+    // Handle expired/missing access token → refresh
     if (res.status === 401) {
       let data;
       try {
@@ -25,7 +24,7 @@ async function apiFetch(endpoint, options = {}) {
         data = null;
       }
 
-      if (data?.detail?.includes("Token has expired")) {
+      if (data?.detail?.includes("expired")) {
         const refreshToken = localStorage.getItem("refresh_token");
         if (!refreshToken) throw new Error("No refresh token found");
 
@@ -38,9 +37,11 @@ async function apiFetch(endpoint, options = {}) {
         if (!refreshRes.ok) throw new Error("Failed to refresh token");
 
         const refreshData = await refreshRes.json();
-        localStorage.setItem("token", refreshData.access_token);
+        token = refreshData.access_token;
+        localStorage.setItem("access_token", token);
 
-        return apiFetch(endpoint, options); // retry original request
+        // Retry original request with new token
+        return apiFetch(endpoint, options);
       }
     }
 
@@ -49,7 +50,6 @@ async function apiFetch(endpoint, options = {}) {
     try {
       data = await res.json();
     } catch {
-      // fallback → text response
       data = await res.text().catch(() => null);
     }
 
@@ -72,7 +72,7 @@ export async function login(email, password) {
   }
 
   // Save tokens
-  localStorage.setItem("token", res.data.access_token);
+  localStorage.setItem("access_token", res.data.access_token);
   if (res.data.refresh_token) {
     localStorage.setItem("refresh_token", res.data.refresh_token);
   }
@@ -107,4 +107,3 @@ export async function verifyEmail(email, code) {
 }
 
 export default apiFetch;
-
