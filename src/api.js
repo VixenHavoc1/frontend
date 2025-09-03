@@ -24,7 +24,11 @@ async function apiFetch(endpoint, options = {}) {
         data = null;
       }
 
-      if (data?.detail?.includes("expired")) {
+      if (
+        data?.detail &&
+        (data.detail.toLowerCase().includes("expired") ||
+          data.detail.toLowerCase().includes("invalid"))
+      ) {
         const refreshToken = localStorage.getItem("refresh_token");
         if (!refreshToken) throw new Error("No refresh token found");
 
@@ -41,7 +45,7 @@ async function apiFetch(endpoint, options = {}) {
         localStorage.setItem("access_token", token);
 
         // Retry original request with new token
-        return apiFetch(endpoint, options);
+        return apiFetch(endpoint, { ...options });
       }
     }
 
@@ -107,3 +111,4 @@ export async function verifyEmail(email, code) {
 }
 
 export default apiFetch;
+
