@@ -63,7 +63,10 @@ const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
      setIsAuthenticated(true);
 
      try {
-  const { ok, data } = await apiFetch("/me", { method: "GET" });
+  const { ok, data } = await apiFetch("/me", {
+    method: "GET",
+    headers: await getAuthHeaders(),
+  });
   if (ok && data) {
     setUserEmail(data.email);
     setHasPaid(data.has_paid);
