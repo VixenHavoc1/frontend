@@ -95,10 +95,33 @@ const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
     }
   };
 
-  const getAuthHeaders = async () => {
-  const token = localStorage.getItem("access_token");
+const getAuthHeaders = async () => {
+  let token = localStorage.getItem("access_token");
+  const refreshToken = localStorage.getItem("refresh_token");
+
+  if (!token && refreshToken) {
+    // try to refresh
+    try {
+      const res = await fetch(`${CHAT_BACKEND_URL}/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        token = data.access_token;
+        localStorage.setItem("access_token", token);
+      } else {
+        console.error("Refresh failed", await res.json());
+      }
+    } catch (err) {
+      console.error("Refresh error:", err);
+    }
+  }
+
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
+
 
 const fetchUserEmail = async () => {
 const token = localStorage.getItem("access_token");
