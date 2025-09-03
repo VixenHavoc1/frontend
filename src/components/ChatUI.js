@@ -98,7 +98,7 @@ const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
 };
 
 const fetchUserEmail = async () => {
-  const token = localStorage.getItem("token");
+const token = localStorage.getItem("access_token");
 if (!token) return;
 
   try {
@@ -240,7 +240,7 @@ const handleVerifySubmit = async (e) => {
 });
 
 if (loginOk && loginData.access_token) {
-  localStorage.setItem("token", loginData.access_token);
+  localStorage.setItem("access_token", loginData.access_token);
   if (loginData.refresh_token) {
     localStorage.setItem("refresh_token", loginData.refresh_token);
   }
