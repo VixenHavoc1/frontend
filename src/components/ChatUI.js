@@ -281,7 +281,6 @@ if (loginOk && loginData.access_token) {
   };
 
   const handleTierClick = async (tier_id) => {
-  const user_id = userId || "guest";
   const priceMap = {
     tier1: 5,
     tier2: 10,
@@ -291,22 +290,24 @@ if (loginOk && loginData.access_token) {
 
   try {
     const authHeaders = await getAuthHeaders();
-const { ok, data } = await apiFetch("/api/create-invoice", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    ...authHeaders,
-  },
-  body: JSON.stringify({ user_id, tier_id, price_amount }),
-});
+    if (!authHeaders.Authorization) {
+      alert("Please log in first.");
+      setShowLogin(true);
+      return;
+    }
 
-
-    
+    const { ok, data } = await apiFetch("/api/create-invoice", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders,
+      },
+      body: JSON.stringify({ tier_id, price_amount }),
+    });
 
     if (ok && data?.payment_link) {
-  window.location.href = data.payment_link;
-}
- else {
+      window.location.href = data.payment_link;
+    } else {
       alert("Payment creation failed.");
       console.error("Invoice error:", data);
     }
@@ -315,7 +316,7 @@ const { ok, data } = await apiFetch("/api/create-invoice", {
     alert("Failed to initiate payment.");
   }
 };
-
+ 
   const handleLoginSubmit = async (e) => {
   e.preventDefault();
   setError("");
