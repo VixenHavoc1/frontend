@@ -1,3 +1,4 @@
+// api.js
 const API_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "https://api.voxellaai.site";
 
@@ -17,18 +18,14 @@ async function apiFetch(endpoint, options = {}) {
 
     // Handle expired/missing access token → refresh
     if (res.status === 401) {
-      let data;
+      let data = null;
       try {
         data = await res.json();
       } catch {
         data = null;
       }
 
-      if (
-        data?.detail &&
-        (data.detail.toLowerCase().includes("expired") ||
-          data.detail.toLowerCase().includes("invalid"))
-      ) {
+      if (data?.detail?.toLowerCase().includes("expired")) {
         const refreshToken = localStorage.getItem("refresh_token");
         if (!refreshToken) throw new Error("No refresh token found");
 
@@ -45,7 +42,7 @@ async function apiFetch(endpoint, options = {}) {
         localStorage.setItem("access_token", token);
 
         // Retry original request with new token
-        return apiFetch(endpoint, { ...options });
+        return apiFetch(endpoint, options);
       }
     }
 
@@ -111,4 +108,3 @@ export async function verifyEmail(email, code) {
 }
 
 export default apiFetch;
-
