@@ -270,11 +270,11 @@ const handleVerifySubmit = async (e) => {
       body: JSON.stringify({ tier_id, price_amount }),
     });
 
-    if (ok && data?.payment_link) {
-      window.location.href = data.payment_link;
+   if (ok && data?.payment_url) {
+     window.location.href = data.payment_url;
     } else {
-      alert("Payment creation failed.");
       console.error("Invoice error:", data);
+      alert(data?.detail || "Payment creation failed.");
     }
   } catch (err) {
     console.error("Invoice error:", err);
