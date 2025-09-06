@@ -6,7 +6,7 @@ import PremiumModal from './PremiumModal';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient'
 import FakePaymentButton from "./FakePaymentButton";
-import apiFetch from "../api";
+import apiFetch, { login, signup, verifyEmail } from "../api";
 
 export default function ChatUI({ bot }) {
   const [messages, setMessages] = useState([]);
@@ -212,23 +212,12 @@ const handleKeyDown = (e) => {
   e.preventDefault();
   setError("");
   try {
-  const { ok, data } = await apiFetch("/signup", {
-  method: "POST",
-  body: JSON.stringify({ email, password }),
-});
-
-   
-    console.log("Signup response:", data);
-
-    if (ok) {
-  setShowSignup(false);
-  setShowVerify(true);
-} else {
-  setError(data?.detail || data?.message || "Signup failed.");
-}
+  await signup(email, password);
+   setShowSignup(false);
+   setShowVerify(true);
   } catch (err) {
     console.error("Signup error:", err);
-    setError("Something went wrong. Please try again.");
+    setError(err.message || "Something went wrong. Please try again.");
   }
 };
 
@@ -236,38 +225,14 @@ const handleKeyDown = (e) => {
 const handleVerifySubmit = async (e) => {
   e.preventDefault();
   try {
- const { ok, data } = await apiFetch('/verify', {
-  method: 'POST',
-  body: JSON.stringify({ email, code: verifyCode }),
-});
-
-   if (ok) {
-  const { ok: loginOk, data: loginData } = await apiFetch("/login", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email, password }),
-});
-
-if (loginOk && loginData.access_token) {
-  if (loginData.refresh_token) {
-   localStorage.setItem("refresh_token", loginData.refresh_token);
- }
-  localStorage.setItem("access_token", loginData.access_token);
-  if (loginData.refresh_token) {
-    localStorage.setItem("refresh_token", loginData.refresh_token);
-  }
-  setIsAuthenticated(true);
-  setShowVerify(false);
-  await fetchUserEmail();
-} else {
-  setError("Verification succeeded, but login failed.");
-}
-
-    } else {
-      setError(data.detail || "Verification failed");
-    }
+  await verifyEmail(email, verifyCode);   // just verifies
+    await login(email, password);           // saves access + refresh tokens
+    setIsAuthenticated(true);
+    setShowVerify(false);
+    await fetchUserEmail();
   } catch {
-    setError("Verification error. Try again.");
+    console.error("Verification error:", err);
+    setError(err.message || "Verification error. Try again.");
   }
 };
 
@@ -322,27 +287,14 @@ if (loginOk && loginData.access_token) {
   setError("");
 
   try {
-    const { ok, data } = await apiFetch("/login", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email, password }),
-});
-     if (ok && data?.access_token) {
-  localStorage.setItem("access_token", data.access_token);
-     if (data.refresh_token) {
-       localStorage.setItem("refresh_token", data.refresh_token);
-    }
-     setIsAuthenticated(true);
-     setShowLogin(false);
-     await fetchUserEmail();
-}
-
-     else {
-      setError(data?.detail || data?.message || "Login failed.");
-    }
+    await login(email, password);           // saves access + refresh tokens
+    setIsAuthenticated(true);
+    setShowLogin(false);
+    await fetchUserEmail();
+    
   } catch (err) {
     console.error("Login error:", err);
-    setError("Something went wrong. Please try again.");
+    setError(err.message || "Something went wrong. Please try again.");
   }
 };
 
