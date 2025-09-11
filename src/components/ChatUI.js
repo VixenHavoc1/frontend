@@ -34,15 +34,12 @@ const [showPremiumUnlocked, setShowPremiumUnlocked] = useState(false);
 const [showAgeModal, setShowAgeModal] = useState(
   !localStorage.getItem("age_verified")
 );
-const [selectedBot, setSelectedBot] = useState(null); // user picks bot first
 
  
   const getSession = async () => {
   const token = localStorage.getItem("access_token");
   return token ? { access_token: token } : null;
 };
-const handleBotSelect = (bot) => {
-  setSelectedBot(bot);
 
   // Only show age modal if not verified
   if (!localStorage.getItem("age_verified")) {
@@ -171,7 +168,7 @@ const sendMessage = async () => {
       },
       body: JSON.stringify({
         message: input,
-  bot_name: selectedBot?.name,
+  bot_name: bot.name,
  
  }),
 
@@ -342,13 +339,9 @@ const handleVerifySubmit = async (e) => {
             transition={{ duration: 0.3, delay: index * 0.05 }}
             className={`flex items-end mb-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
           >
-            {msg.sender === "bot" && selectedBot && (
-  <img
-    src={getBotPic(selectedBot.name)}
-    alt="Bot"
-    className="w-10 h-10 rounded-full mr-3"
-  />
-)}
+            {msg.sender === "bot" && (
+   <img src={getBotPic(bot.name)} alt={bot.name} className="w-10 h-10 rounded-full mr-3" />
+ )}
 
             <div className={`max-w-[70%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] px-4 py-3 rounded-2xl text-base whitespace-pre-wrap leading-relaxed relative ${msg.sender === "user" ? "bg-[#5A2D8C]" : "bg-[#3A2A4D]"}`}>
               {msg.text}
@@ -359,7 +352,7 @@ const handleVerifySubmit = async (e) => {
         ))}
         {isTyping && (
           <motion.div className="flex justify-start mb-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ repeat: Infinity, repeatType: "reverse", duration: 0.6 }}>
-           <div className="px-4 py-2 bg-[#3A2A4D] rounded-2xl text-sm">{selectedBot ? `${selectedBot.name} is typing...` : "Bot is typing..."}</div>
+           <div className="px-4 py-2 bg-[#3A2A4D] rounded-2xl text-sm">{`${bot.name} is typing...`}</div>
           </motion.div>
         )}
         <div ref={chatEndRef} />
