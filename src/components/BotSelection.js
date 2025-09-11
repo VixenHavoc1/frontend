@@ -5,7 +5,7 @@ export default function BotSelection({ onSelect }) {
     { 
       name: "Lily", 
       vibe: "Submissive", 
-      image: "/lily.png" 
+      image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic10.png" 
     },
     { 
       name: "Raven", 
