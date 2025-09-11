@@ -225,7 +225,7 @@ const handleKeyDown = (e) => {
     if (name.includes("lily")) return "/lily.png";
     if (name.includes("plaksha")) return "/plaksha.png";
     if (name.includes("raven")) return "/raven.png";
-    return "/default.png";
+    return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic14.png";
   };
 
  const handleSignupSubmit = async (e) => {
