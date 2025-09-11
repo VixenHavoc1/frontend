@@ -34,12 +34,15 @@ const [showPremiumUnlocked, setShowPremiumUnlocked] = useState(false);
 const [showAgeModal, setShowAgeModal] = useState(
   !localStorage.getItem("age_verified")
 );
+const [selectedBot, setSelectedBot] = useState(null); // user picks bot first
 
  
   const getSession = async () => {
   const token = localStorage.getItem("access_token");
   return token ? { access_token: token } : null;
 };
+const handleBotSelect = (bot) => {
+  setSelectedBot(bot);
 
   // Only show age modal if not verified
   if (!localStorage.getItem("age_verified")) {
@@ -167,9 +170,8 @@ const sendMessage = async () => {
         ...headers,                           // ✅ Authorization
       },
       body: JSON.stringify({
-        message: input,
-  bot_name: bot.name,
- 
+  message: input,
+  bot_name: bot?.name || "Default",
  }),
 
     });
@@ -220,10 +222,10 @@ const handleKeyDown = (e) => {
 
   const getBotPic = (botName) => {
     const name = botName?.toLowerCase() || "";
-    if (name.includes("lily")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic10.png";
-    if (name.includes("plaksha")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic5.png";
-    if (name.includes("raven")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic41.png";
-    return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic33.png";
+    if (name.includes("lily")) return "/lily.png";
+    if (name.includes("plaksha")) return "/plaksha.png";
+    if (name.includes("raven")) return "/raven.png";
+    return "/default.png";
   };
 
  const handleSignupSubmit = async (e) => {
@@ -340,9 +342,8 @@ const handleVerifySubmit = async (e) => {
             className={`flex items-end mb-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
           >
             {msg.sender === "bot" && (
-   <img src={getBotPic(bot.name)} alt={bot.name} className="w-10 h-10 rounded-full mr-3" />
- )}
-
+              <img src={getBotPic(bot?.name)} alt="Bot" className="w-10 h-10 rounded-full mr-3" />  
+            )}
             <div className={`max-w-[70%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] px-4 py-3 rounded-2xl text-base whitespace-pre-wrap leading-relaxed relative ${msg.sender === "user" ? "bg-[#5A2D8C]" : "bg-[#3A2A4D]"}`}>
               {msg.text}
               {msg.audio && <AudioWave url={msg.audio} />}
@@ -352,7 +353,7 @@ const handleVerifySubmit = async (e) => {
         ))}
         {isTyping && (
           <motion.div className="flex justify-start mb-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ repeat: Infinity, repeatType: "reverse", duration: 0.6 }}>
-           <div className="px-4 py-2 bg-[#3A2A4D] rounded-2xl text-sm">{`${bot.name} is typing...`}</div>
+            <div className="px-4 py-2 bg-[#3A2A4D] rounded-2xl text-sm">{bot.name} is typing...</div>
           </motion.div>
         )}
         <div ref={chatEndRef} />
