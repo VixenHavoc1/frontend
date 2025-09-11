@@ -222,10 +222,10 @@ const handleKeyDown = (e) => {
 
   const getBotPic = (botName) => {
     const name = botName?.toLowerCase() || "";
-    if (name.includes("lily")) return "/lily.png";
-    if (name.includes("plaksha")) return "/plaksha.png";
-    if (name.includes("raven")) return "/raven.png";
-    return "/default.png";
+    if (name.includes("lily")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic10.png";
+    if (name.includes("plaksha")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic5.png";
+    if (name.includes("raven")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic41.png";
+    return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic33.png";
   };
 
  const handleSignupSubmit = async (e) => {
