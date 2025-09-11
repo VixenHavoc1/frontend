@@ -83,9 +83,11 @@ const [showPremiumUnlocked, setShowPremiumUnlocked] = useState(false);
     initializeUser();
   }, []);
   
-  useEffect(() => {
-  if (hasPaid) {
+ useEffect(() => {
+  const shown = localStorage.getItem("premium_modal_shown");
+  if (hasPaid && !shown) {
     setShowPremiumUnlocked(true);
+    localStorage.setItem("premium_modal_shown", "true");
   }
 }, [hasPaid]);
 
