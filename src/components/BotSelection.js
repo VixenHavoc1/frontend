@@ -10,7 +10,7 @@ export default function BotSelection({ onSelect }) {
     { 
       name: "Raven", 
       vibe: "Teasing", 
-      image: "/raven.png" 
+      image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic12.png" 
     },
     { 
       name: "Plaksha", 
