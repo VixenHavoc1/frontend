@@ -5,7 +5,6 @@ import AudioWave from "./AudioWave";
 import PremiumModal from './PremiumModal';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient'
-import FakePaymentButton from "./FakePaymentButton";
 import apiFetch, { login, signup, verifyEmail } from "../api";
 
 export default function ChatUI({ bot }) {
@@ -31,6 +30,7 @@ export default function ChatUI({ bot }) {
 const userId = userEmail || "guest"; // fallback if not logged in
 const CHAT_BACKEND_URL = "https://api.voxellaai.site";
 const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
+const [showPremiumUnlocked, setShowPremiumUnlocked] = useState(false);
 
  
   const getSession = async () => {
@@ -83,6 +83,12 @@ const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
     initializeUser();
   }, []);
   
+  useEffect(() => {
+  if (hasPaid) {
+    setShowPremiumUnlocked(true);
+  }
+}, [hasPaid]);
+
   const fetchBlobMedia = async (url) => {
     try {
       const res = await fetch(url);
@@ -356,7 +362,7 @@ const handleVerifySubmit = async (e) => {
         >
           Send
         </button>
-             <FakePaymentButton userEmail={userEmail} />
+            
       </div>
 
       {/* Paywall Modal */}
@@ -494,6 +500,25 @@ const handleVerifySubmit = async (e) => {
       <div className="absolute top-4 right-4 cursor-pointer" onClick={() => setShowVerify(false)}>
         <span className="text-lg font-bold text-[#999]">X</span>
       </div>
+    </motion.div>
+  </div>
+)}
+{showPremiumUnlocked && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="bg-[#1F1B29]/90 rounded-2xl p-8 shadow-2xl max-w-md w-full text-white relative border border-[#5A2D8C]/40 text-center"
+    >
+      <h2 className="text-3xl font-bold mb-4">🎉 Premium Unlocked!</h2>
+      <p className="text-lg mb-6">Enjoy unlimited access with your new tier 🚀</p>
+      <button
+        onClick={() => setShowPremiumUnlocked(false)}
+        className="bg-[#5A2D8C] px-6 py-2 rounded-lg hover:bg-[#6B3B98] transition-all duration-300"
+      >
+        Continue
+      </button>
     </motion.div>
   </div>
 )}
