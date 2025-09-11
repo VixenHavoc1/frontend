@@ -15,7 +15,7 @@ export default function BotSelection({ onSelect }) {
     { 
       name: "Plaksha", 
       vibe: "Toxic", 
-      image: "/plaksha.png" 
+      image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic11.png" 
     },
   ];
 
