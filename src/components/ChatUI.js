@@ -342,11 +342,14 @@ const handleVerifySubmit = async (e) => {
             transition={{ duration: 0.3, delay: index * 0.05 }}
             className={`flex items-end mb-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
           >
-            {msg.sender === "bot" && (
-             {selectedBot && (
-   <img src={getBotPic(selectedBot.name)} alt="Bot" className="w-10 h-10 rounded-full mr-3" />
- )}  
-            )}
+            {msg.sender === "bot" && selectedBot && (
+  <img
+    src={getBotPic(selectedBot.name)}
+    alt="Bot"
+    className="w-10 h-10 rounded-full mr-3"
+  />
+)}
+
             <div className={`max-w-[70%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] px-4 py-3 rounded-2xl text-base whitespace-pre-wrap leading-relaxed relative ${msg.sender === "user" ? "bg-[#5A2D8C]" : "bg-[#3A2A4D]"}`}>
               {msg.text}
               {msg.audio && <AudioWave url={msg.audio} />}
