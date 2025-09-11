@@ -31,11 +31,23 @@ const userId = userEmail || "guest"; // fallback if not logged in
 const CHAT_BACKEND_URL = "https://api.voxellaai.site";
 const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
 const [showPremiumUnlocked, setShowPremiumUnlocked] = useState(false);
+const [showAgeModal, setShowAgeModal] = useState(
+  !localStorage.getItem("age_verified")
+);
+const [selectedBot, setSelectedBot] = useState(null); // user picks bot first
 
  
   const getSession = async () => {
   const token = localStorage.getItem("access_token");
   return token ? { access_token: token } : null;
+};
+const handleBotSelect = (bot) => {
+  setSelectedBot(bot);
+
+  // Only show age modal if not verified
+  if (!localStorage.getItem("age_verified")) {
+    setShowAgeModal(true);
+  }
 };
 
   
@@ -520,6 +532,30 @@ const handleVerifySubmit = async (e) => {
         className="bg-[#5A2D8C] px-6 py-2 rounded-lg hover:bg-[#6B3B98] transition-all duration-300"
       >
         Continue
+      </button>
+    </motion.div>
+  </div>
+)}
+{showAgeModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="bg-[#1F1B29]/90 rounded-2xl p-8 max-w-md w-full text-white text-center border border-[#5A2D8C]/40"
+    >
+      <h2 className="text-2xl font-bold mb-4">Age Verification</h2>
+      <p className="mb-6">
+        You must be 18+ to use this AI chatbot. All interactions are fictional.
+      </p>
+      <button
+        onClick={() => {
+          localStorage.setItem("age_verified", "true");
+          setShowAgeModal(false);
+        }}
+        className="bg-[#5A2D8C] px-6 py-2 rounded-lg hover:bg-[#6B3B98] transition-all duration-300"
+      >
+        I’m 18+ and understand
       </button>
     </motion.div>
   </div>
