@@ -250,7 +250,7 @@ const handleVerifySubmit = async (e) => {
     setIsAuthenticated(true);
     setShowVerify(false);
     await fetchUserEmail();
-  } catch {
+  } catch (err){
     console.error("Verification error:", err);
     setError(err.message || "Verification error. Try again.");
   }
