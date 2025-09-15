@@ -27,6 +27,8 @@ export default function ChatUI({ bot }) {
   const [showVerify, setShowVerify] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [verifyCode, setVerifyCode] = useState('');
+  const [showNameModal, setShowNameModal] = useState(false);
+const [userName, setUserName] = useState("");
 const userId = userEmail || "guest"; // fallback if not logged in
 const CHAT_BACKEND_URL = "https://api.voxellaai.site";
 const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
@@ -139,6 +141,23 @@ if (ok && data.email) {
 
   } catch (err) {
     console.error("Failed to fetch user email", err);
+  }
+};
+useEffect(() => {
+  const storedName = localStorage.getItem("userName");
+  const nameSet = localStorage.getItem("nameSet");
+
+  if (storedName) {
+    setUserName(storedName);
+  } else if (!nameSet && isAuthenticated) { // only after login/signup
+    setShowNameModal(true);
+  }
+}, [isAuthenticated]);
+const handleNameConfirm = () => {
+  if (userName.trim()) {
+    localStorage.setItem("userName", userName.trim());
+    localStorage.setItem("nameSet", "true"); // ensures modal shows only once
+    setShowNameModal(false);
   }
 };
 
@@ -558,6 +577,27 @@ const handleVerifySubmit = async (e) => {
         I’m 18+ and understand
       </button>
     </motion.div>
+  </div>
+)}
+{showNameModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+    <div className="bg-[#1F1B29] p-8 rounded-2xl text-white w-[90%] max-w-sm text-center">
+      <h2 className="text-2xl font-bold mb-4">Hey sweetheart! 🥰✨</h2>
+      <p className="mb-4">What should I call you?</p>
+      <input
+        type="text"
+        value={userName}
+        onChange={(e) => setUserName(e.target.value)}
+        className="w-full p-2 mb-4 rounded-lg bg-[#3A2A4D] text-white outline-none"
+        placeholder="Enter your name..."
+      />
+      <button
+        onClick={handleNameConfirm}
+        className="bg-[#ff69b4] px-6 py-2 rounded-lg hover:bg-pink-500 transition-all duration-300"
+      >
+        Confirm
+      </button>
+    </div>
   </div>
 )}
 
