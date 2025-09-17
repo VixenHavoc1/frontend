@@ -1,5 +1,6 @@
 // api.js
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://api.voxellaai.site";
+const API_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "https://api.voxellaai.site";
 
 async function apiFetch(endpoint, options = {}, retry = true) {
   let accessToken = localStorage.getItem("access_token");
@@ -17,19 +18,26 @@ async function apiFetch(endpoint, options = {}, retry = true) {
       headers,
     });
 
-    // If token expired → try refreshing
+    // If token expired → try refreshing once
     if (res.status === 401 && refreshToken && retry) {
       const refreshed = await refreshAccessToken(refreshToken);
 
       if (refreshed) {
-        // Retry original request once with new token
-        return apiFetch(endpoint, options, false);
+        return apiFetch(endpoint, options, false); // retry once
       } else {
         throw new Error("Session expired, please log in again.");
       }
     }
 
-    return res;
+    // Parse response safely
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+
+    return { ok: res.ok, status: res.status, data };
   } catch (err) {
     console.error("API Fetch Error:", err);
     throw err;
@@ -64,6 +72,52 @@ async function refreshAccessToken(refreshToken) {
     console.error("Refresh token request failed:", err);
     return false;
   }
+}
+
+// ---- Auth helpers ---- //
+export async function login(email, password) {
+  const res = await apiFetch("/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) {
+    throw new Error(res.data?.detail || "Login failed");
+  }
+
+  // Save tokens
+  localStorage.setItem("access_token", res.data.access_token);
+  if (res.data.refresh_token) {
+    localStorage.setItem("refresh_token", res.data.refresh_token);
+  }
+
+  return res.data;
+}
+
+export async function signup(email, password) {
+  const res = await apiFetch("/signup", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!res.ok) {
+    throw new Error(res.data?.detail || "Signup failed");
+  }
+
+  return res.data;
+}
+
+export async function verifyEmail(email, code) {
+  const res = await apiFetch("/verify", {
+    method: "POST",
+    body: JSON.stringify({ email, code }),
+  });
+
+  if (!res.ok) {
+    throw new Error(res.data?.detail || "Verification failed");
+  }
+
+  return res.data;
 }
 
 export default apiFetch;
