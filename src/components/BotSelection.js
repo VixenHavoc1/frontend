@@ -20,23 +20,26 @@ export default function BotSelection({ onSelect }) {
   ];
 
   return (
-    <div className="h-screen bg-[#2C1F3D] text-white">
+    <div className="min-h-screen bg-[#2C1F3D] text-white flex flex-col">
+      {/* Header */}
       <div className="bg-gradient-to-b from-[#6A2D8C] to-[#F8A5D2] p-4">
-        <h1 className="text-3xl font-bold text-center text-white">Voxella AI</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-center text-white">
+          Voxella AI
+        </h1>
       </div>
 
-      <div className="flex justify-center items-center h-full p-4">
-        <div className="w-full max-w-4xl grid grid-cols-1 sm:grid-cols-3 gap-6">
+      {/* Bot Grid */}
+      <div className="flex-1 flex justify-center items-center p-4">
+        <div className="w-full max-w-4xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {bots.map((bot) => (
             <div
               key={bot.name}
-              className="p-4 rounded-xl shadow-xl transition-all transform hover:scale-105 cursor-pointer relative group"
+              className="p-4 rounded-xl shadow-xl transition-transform transform hover:scale-105 cursor-pointer relative group"
               onClick={() => onSelect(bot.name)}
             >
-              {/* Gradient Background for each model */}
               <div className="h-full bg-gradient-to-b from-[#6A2D8C] to-[#F8A5D2] rounded-xl p-4 flex flex-col items-center">
-                {/* Image Section */}
-                <div className="h-40 w-40 mb-4 rounded-full overflow-hidden">
+                {/* Image */}
+                <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 mb-4 rounded-full overflow-hidden">
                   <img
                     src={bot.image}
                     alt={bot.name}
@@ -44,10 +47,14 @@ export default function BotSelection({ onSelect }) {
                   />
                 </div>
 
-                {/* Info Section */}
+                {/* Info */}
                 <div className="text-center">
-                  <h2 className="text-xl font-bold text-white mb-2">{bot.name}</h2>
-                  <p className="text-lg text-white opacity-80">{bot.vibe} Personality</p>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1">
+                    {bot.name}
+                  </h2>
+                  <p className="text-sm sm:text-base md:text-lg text-white opacity-80">
+                    {bot.vibe} Personality
+                  </p>
                 </div>
               </div>
             </div>
@@ -57,3 +64,4 @@ export default function BotSelection({ onSelect }) {
     </div>
   );
 }
+
