@@ -191,6 +191,7 @@ const sendMessage = async () => {
       body: JSON.stringify({
   message: input,
   bot_name: bot?.name || "Default",
+        user_name: localStorage.getItem("userName") || null,
  }),
 
     });
