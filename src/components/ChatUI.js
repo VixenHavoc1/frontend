@@ -153,11 +153,28 @@ useEffect(() => {
     setShowNameModal(true);
   }
 }, [isAuthenticated]);
-const handleNameConfirm = () => {
-  if (userName.trim()) {
+
+const handleNameConfirm = async () => {
+  if (!userName.trim()) return;
+
+  try {
+    // 🔥 send to backend
+    await apiFetch("/me/display-name", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...await getAuthHeaders(),
+      },
+      body: JSON.stringify({ display_name: userName.trim() }),
+    });
+
+    // also update localStorage so it stays in sync
     localStorage.setItem("userName", userName.trim());
-    localStorage.setItem("nameSet", "true"); // ensures modal shows only once
+    localStorage.setItem("nameSet", "true");
+
     setShowNameModal(false);
+  } catch (err) {
+    console.error("Failed to update display name:", err);
   }
 };
 
