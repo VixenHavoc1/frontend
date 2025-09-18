@@ -101,7 +101,7 @@ export async function signup(email, password) {
   });
 
   if (!res.ok) {
-    throw new Error(res.data?.detail || "Signup failed");
+     return null;
   }
 
   return res.data;
