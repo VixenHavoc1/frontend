@@ -23,13 +23,17 @@ async function apiFetch(endpoint, options = {}, retry = true) {
       const refreshed = await refreshAccessToken(refreshToken);
 
       if (refreshed) {
-        return apiFetch(endpoint, options, false); // retry once
+        // Retry original request with new access token
+        return apiFetch(endpoint, options, false);
       } else {
-        throw new Error("Session expired, please log in again.");
+        // refresh failed → clear tokens
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        return { ok: false, status: 401, data: null };
       }
     }
 
-    // Parse response safely
+    // Parse safely
     let data;
     try {
       data = await res.json();
@@ -40,9 +44,10 @@ async function apiFetch(endpoint, options = {}, retry = true) {
     return { ok: res.ok, status: res.status, data };
   } catch (err) {
     console.error("API Fetch Error:", err);
-    throw err;
+    return { ok: false, status: 500, data: null };
   }
 }
+
 
 async function refreshAccessToken(refreshToken) {
   try {
