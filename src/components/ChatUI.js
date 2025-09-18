@@ -272,9 +272,7 @@ const handleKeyDown = (e) => {
   await signup(email, password);
    setShowSignup(false);
    setShowVerify(true);
-  } catch (err) {
-    console.error("Signup error:", err);
-    setError(err.message || "Something went wrong. Please try again.");
+  }  return;
   }
 };
 
@@ -349,9 +347,7 @@ const handleVerifySubmit = async (e) => {
     setShowLogin(false);
     await fetchUserEmail();
     
-  } catch (err) {
-    console.error("Login error:", err);
-    setError(err.message || "Something went wrong. Please try again.");
+  }  return;
   }
 };
 
@@ -429,3 +425,5 @@ const handleVerifySubmit = async (e) => {
         Send
       </button>
     </div>
+);        
+}          
