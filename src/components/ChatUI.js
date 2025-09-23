@@ -267,14 +267,17 @@ const handleKeyDown = (e) => {
 
  const handleSignupSubmit = async (e) => {
   e.preventDefault();
-  setError("");
+
   try {
-  await signup(email, password);
-   setShowSignup(false);
-   setShowVerify(true);
-  }  return;
+    await signup(email, password);
+    setShowSignup(false);
+    setShowVerify(true);
+  } catch (err) {
+    // 🔥 completely silent
+    // do NOT setError, do NOT alert, do NOT show anything
   }
 };
+
 
 
 const handleVerifySubmit = async (e) => {
