@@ -36,7 +36,9 @@ const [showAgeModal, setShowAgeModal] = useState(
 );
 const [selectedBot, setSelectedBot] = useState(null); // user picks bot first
 
- 
+ const [showUsernameModal, setShowUsernameModal] = useState(false);
+const [username, setUsername] = useState('');
+
   const getSession = async () => {
   const token = localStorage.getItem("access_token");
   return token ? { access_token: token } : null;
@@ -102,6 +104,27 @@ const handleBotSelect = (bot) => {
     localStorage.setItem("premium_modal_shown", "true");
   }
 }, [hasPaid]);
+  const sendMessage = async () => {
+  if (!isAuthenticated) {
+    setShowSignup(true);
+    return;
+  }
+
+  // Show username modal first if username not set
+  if (!username) {
+    setShowUsernameModal(true);
+    return;
+  }
+
+  if (!hasPaid && messageCount >= 5) {
+    setShowPaywall(true);
+    return;
+  }
+
+  if (!input.trim()) return;
+
+  // ...rest of your existing sendMessage code
+};
 
   const fetchBlobMedia = async (url) => {
     try {
@@ -560,6 +583,34 @@ const handleVerifySubmit = async (e) => {
     </motion.div>
   </div>
 )}
+  {showUsernameModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="bg-[#1F1B29]/90 rounded-2xl p-8 shadow-2xl max-w-md w-full text-white relative border border-[#5A2D8C]/40 text-center"
+    >
+      <h2 className="text-2xl font-bold mb-4">Hey, what's your name sweetheart? 💖</h2>
+      <input
+        type="text"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        placeholder="Enter your name"
+        className="w-full p-3 mb-4 bg-[#3A2A4D] text-white rounded-lg"
+      />
+      <button
+        onClick={() => {
+          if (username.trim()) setShowUsernameModal(false);
+        }}
+        className="bg-[#5A2D8C] px-6 py-2 rounded-lg hover:bg-[#6B3B98] transition-all duration-300"
+      >
+        Continue
+      </button>
+    </motion.div>
+  </div>
+)}
+
 
     </div>
   );
