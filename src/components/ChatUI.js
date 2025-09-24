@@ -97,6 +97,13 @@ const handleBotSelect = (bot) => {
     };
     initializeUser();
   }, []);
+
+   useEffect(() => {
+    const saved = localStorage.getItem("user_name");
+    if (saved) {
+      setTempName(saved);
+    }
+  }, []);
   
  useEffect(() => {
   const shown = localStorage.getItem("premium_modal_shown");
@@ -144,7 +151,19 @@ if (ok && data.email) {
     console.error("Failed to fetch user email", err);
   }
 };
+if (!show) return null;
 
+  const handleContinue = () => {
+    if (!tempName.trim()) return; // prevent empty name
+    localStorage.setItem("user_name", tempName.trim());
+    onSave(tempName.trim());
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleContinue();
+    }
+  };
 // Replace your existing sendMessage with this function
 const sendMessage = async () => {
   if (!username) {
