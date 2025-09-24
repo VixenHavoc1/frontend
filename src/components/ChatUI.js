@@ -345,14 +345,16 @@ const handleVerifySubmit = async (e) => {
   setError("");
 
   try {
-    await login(email, password);           // saves access + refresh tokens
+    await login(email, password);           
     setIsAuthenticated(true);
     setShowLogin(false);
     await fetchUserEmail();
-    
-  }  return;
+  } catch (err) {
+    console.error("Login error:", err);
+    setError(err.message || "Login failed");
   }
 };
+
 
   
   return (
@@ -410,23 +412,25 @@ const handleVerifySubmit = async (e) => {
       <div ref={chatEndRef} />
     </div>
 
-    {/* Input Box */}
-    <div className="flex p-2 sm:p-1 bg-[#1F1B29]">
-      <textarea
-        ref={inputRef}
-        value={input}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-        rows={1}
-        className="flex-1 p-2 bg-[#3A2A4D] text-white rounded-lg outline-none resize-none min-h-[36px] max-h-[150px] overflow-y-auto text-sm sm:text-xs"
-        placeholder="Type a message..."
-      />
-      <button
-        onClick={sendMessage}
-        className="ml-2 bg-[#333333] px-3 py-2 rounded-lg hover:bg-[#444444] text-sm sm:text-xs transition-all duration-300"
-      >
-        Send
-      </button>
-    </div>
+     {/* Input Box */}
+  <div className="flex p-2 sm:p-1 bg-[#1F1B29]">
+    <textarea
+      ref={inputRef}
+      value={input}
+      onChange={handleInputChange}
+      onKeyDown={handleKeyDown}
+      rows={1}
+      className="flex-1 p-2 bg-[#3A2A4D] text-white rounded-lg outline-none resize-none min-h-[36px] max-h-[150px] overflow-y-auto text-sm sm:text-xs"
+      placeholder="Type a message..."
+    />
+    <button
+      onClick={sendMessage}
+      className="ml-2 bg-[#333333] px-3 py-2 rounded-lg hover:bg-[#444444] text-sm sm:text-xs transition-all duration-300"
+    >
+      Send
+    </button>
+  </div>
+</div>  {/* closes main container */}
+
 );        
 }          
