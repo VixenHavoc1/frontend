@@ -6,7 +6,8 @@ import PremiumModal from './PremiumModal';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient'
 import apiFetch, { login, signup, verifyEmail } from "../api";
-
+export default function UsernameModal({ show, onSave }) {
+  const [tempName, setTempName] = useState("");
 export default function ChatUI({ bot }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
