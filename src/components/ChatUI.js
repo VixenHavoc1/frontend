@@ -173,19 +173,17 @@ const sendMessage = async () => {
     const { ok, status, data } = await apiFetch("/chat", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",   // ✅ required
-        ...headers,                           // ✅ Authorization
+        "Content-Type": "application/json",
+        ...headers,
       },
       body: JSON.stringify({
-  message: input,
-  bot_name: bot?.name || "Default",
-        user_name: username || "Guest",
- }),
-
+        message: input,
+        bot_name: selectedBot,
+        user_name: username,   // ✅ FIXED (was displayName)
+      }),
     });
 
     if (status === 403) {
-      console.log("🚫 403 Forbidden — triggering paywall");
       setShowPaywall(true);
       return;
     }
@@ -194,14 +192,16 @@ const sendMessage = async () => {
       throw new Error(data?.error || "Failed to send message");
     }
 
-    const botMessage = {
-      sender: "bot",
-      text: data?.response || "Sorry, no reply received.",
-      audio: data?.audio || null,
-      image: data?.image || null,
-    };
-
-    setMessages((prev) => [...prev, botMessage]);
+    if (data?.response) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: data.response, audio: data.audio || null, image: data.image || null }
+      ]);
+    } else if (data?.error) {
+      setMessages((prev) => [...prev, { sender: "bot", text: `⚠️ ${data.error}` }]);
+    } else {
+      setMessages((prev) => [...prev, { sender: "bot", text: "Sorry, no reply received." }]);
+    }
 
     const newCount = messageCount + 1;
     setMessageCount(newCount);
@@ -212,6 +212,7 @@ const sendMessage = async () => {
     setIsTyping(false);
   }
 };
+
 
 
 const handleKeyDown = (e) => {
