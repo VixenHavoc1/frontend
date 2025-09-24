@@ -338,17 +338,15 @@ const handleVerifySubmit = async (e) => {
   }
 };
  
-  const handleLoginSubmit = async (e) => {
+ const handleLoginSubmit = async (e) => {
   e.preventDefault();
-  setError("");
-
   try {
-    await login(email, password);           // saves access + refresh tokens
+    await login(email, password);
     setIsAuthenticated(true);
     setShowLogin(false);
     await fetchUserEmail();
-    
-  }  return;
+  } catch (err) {
+    // ignore errors if you want
   }
 };
 
