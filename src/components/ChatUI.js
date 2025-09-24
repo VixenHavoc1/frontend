@@ -357,21 +357,22 @@ const handleVerifySubmit = async (e) => {
 
 
   
-  return (
+ return (
   <div className="flex flex-col h-screen bg-[#2C1F3D] text-white">
+    {/* Header */}
     <div className="bg-[#1F1B29] p-3 shadow-lg flex justify-between items-center">
       <h1 className="text-xl font-bold text-white text-center sm:text-lg md:text-xl">VOXELLA AI</h1>
       {!isAuthenticated && (
-        <div className="flex gap-2 sm:gap-1">
+        <div className="flex gap-2 sm:gap-2">
           <button 
             onClick={() => setShowSignup(true)} 
-            className="bg-[#5A2D8C] px-3 py-2 rounded-lg hover:bg-[#6B3B98] text-sm sm:text-xs transition-all duration-300"
+            className="bg-[#5A2D8C] hover:bg-[#6B3B98] px-4 py-1 rounded-md text-sm sm:text-sm transition-colors duration-200"
           >
             Sign Up
           </button>
           <button 
             onClick={() => setShowLogin(true)} 
-            className="bg-[#5A2D8C] px-3 py-2 rounded-lg hover:bg-[#6B3B98] text-sm sm:text-xs transition-all duration-300"
+            className="bg-[#8C5AAB] hover:bg-[#A26BCC] px-4 py-1 rounded-md text-sm sm:text-sm transition-colors duration-200"
           >
             Log In
           </button>
@@ -412,25 +413,24 @@ const handleVerifySubmit = async (e) => {
       <div ref={chatEndRef} />
     </div>
 
-     {/* Input Box */}
-  <div className="flex p-2 sm:p-1 bg-[#1F1B29]">
-    <textarea
-      ref={inputRef}
-      value={input}
-      onChange={handleInputChange}
-      onKeyDown={handleKeyDown}
-      rows={1}
-      className="flex-1 p-2 bg-[#3A2A4D] text-white rounded-lg outline-none resize-none min-h-[36px] max-h-[150px] overflow-y-auto text-sm sm:text-xs"
-      placeholder="Type a message..."
-    />
-    <button
-      onClick={sendMessage}
-      className="ml-2 bg-[#333333] px-3 py-2 rounded-lg hover:bg-[#444444] text-sm sm:text-xs transition-all duration-300"
-    >
-      Send
-    </button>
+    {/* Input Box */}
+    <div className="flex p-2 sm:p-1 bg-[#1F1B29] items-center">
+      <textarea
+        ref={inputRef}
+        value={input}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        rows={1}
+        className="flex-1 p-2 bg-[#3A2A4D] text-white rounded-l-lg outline-none resize-none min-h-[36px] max-h-[150px] overflow-y-auto text-sm sm:text-xs"
+        placeholder="Type a message..."
+      />
+      <button
+        onClick={sendMessage}
+        className="bg-[#5A2D8C] hover:bg-[#6B3B98] px-4 py-2 rounded-r-lg text-sm sm:text-xs transition-colors duration-200"
+      >
+        Send
+      </button>
+    </div>
   </div>
-</div> 
-
-);        
+); 
 }          
