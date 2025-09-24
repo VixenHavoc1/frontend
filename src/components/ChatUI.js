@@ -145,6 +145,7 @@ if (ok && data.email) {
   }
 };
 
+// Replace your existing sendMessage with this function
 const sendMessage = async () => {
   if (!username) {
     setShowUsernameModal(true);
@@ -154,12 +155,10 @@ const sendMessage = async () => {
     setShowSignup(true);
     return;
   }
-
   if (!hasPaid && messageCount >= 5) {
     setShowPaywall(true);
     return;
   }
-
   if (!input.trim()) return;
 
   const userMessage = { sender: "user", text: input };
@@ -170,6 +169,17 @@ const sendMessage = async () => {
   try {
     const headers = await getAuthHeaders();
 
+    // make sure to send a string bot name, not the whole object
+    const botNameToSend = bot?.name || (selectedBot?.name || "Default");
+    const userNameToSend = username || localStorage.getItem("user_name") || "baby";
+
+    console.log("→ sending /chat payload:", {
+      message: input,
+      bot_name: botNameToSend,
+      user_name: userNameToSend,
+      headers
+    });
+
     const { ok, status, data } = await apiFetch("/chat", {
       method: "POST",
       headers: {
@@ -178,47 +188,64 @@ const sendMessage = async () => {
       },
       body: JSON.stringify({
         message: input,
-        bot_name: selectedBot,
-        user_name: username,   // ✅ FIXED (was displayName)
+        bot_name: botNameToSend,
+        user_name: userNameToSend,
       }),
     });
+
+    console.log("← /chat response:", { ok, status, data });
 
     if (status === 403) {
       setShowPaywall(true);
       return;
     }
-
     if (!ok) {
       throw new Error(data?.error || "Failed to send message");
     }
 
-    if (data?.response || data?.message) {
-  setMessages((prev) => [
-    ...prev,
-    {
-      sender: "bot",
-      text: data.response || data.message, // ✅ accept both keys
-      audio: data.audio || null,
-      image: data.image || null,
-    },
-  ]);
-} else if (data?.error) {
-  setMessages((prev) => [
-    ...prev,
-    { sender: "bot", text: `⚠️ ${data.error}` },
-  ]);
-} else {
-  setMessages((prev) => [
-    ...prev,
-    { sender: "bot", text: "Sorry, no reply received." },
-  ]);
-}
+    // accept multiple possible keys the backend might return
+    const text =
+      data?.response || data?.message || data?.bot_reply || null;
+
+    if (text) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "bot",
+          text,
+          audio: data?.audio || null,
+          image: data?.image || null,
+        },
+      ]);
+    } else if (data?.error) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: `⚠️ ${data.error}` },
+      ]);
+    } else {
+      // helpful fallback — show raw data so you can see what's actually coming back
+      console.warn("No reply key in /chat response:", data);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "bot",
+          text: `Sorry, no reply received. (raw: ${JSON.stringify(
+            data
+          )})`,
+        },
+      ]);
+    }
 
     const newCount = messageCount + 1;
     setMessageCount(newCount);
     localStorage.setItem("message_count", newCount.toString());
   } catch (err) {
     console.error("Message error:", err);
+    // show error to user as message so you can see it in the UI
+    setMessages((prev) => [
+      ...prev,
+      { sender: "bot", text: `Error: ${err.message || err}` },
+    ]);
   } finally {
     setIsTyping(false);
   }
@@ -580,36 +607,29 @@ const handleVerifySubmit = async (e) => {
     </motion.div>
   </div>
 )}
-{showUsernameModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="bg-[#1F1B29]/90 rounded-2xl p-8 shadow-2xl max-w-md w-full text-white relative border border-[#5A2D8C]/40 text-center"
-    >
-      <h2 className="text-2xl font-bold mb-4">Hey, what do you want me to call you sweetheart?😘 💖</h2>
-      <input
-        type="text"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        placeholder="Enter your name"
-        className="w-full p-3 mb-4 bg-[#3A2A4D] text-white rounded-lg"
-      />
-      <button
-        onClick={() => {
-          if (username.trim()) {
-    setShowUsernameModal(false);
-    localStorage.setItem("user_name", username);
-          }
-        }}
-        className="bg-[#5A2D8C] px-6 py-2 rounded-lg hover:bg-[#6B3B98] transition-all duration-300"
-      >
-        Continue
-      </button>
-    </motion.div>
-  </div>
-)}
+ <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl shadow-xl p-6 w-80 text-center">
+        <h2 className="text-xl font-semibold mb-4">
+          Hey, what's your name sweetheart?
+        </h2>
+        <input
+          type="text"
+          value={tempName}
+          onChange={(e) => setTempName(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Enter your name"
+          className="w-full border rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring focus:border-pink-500"
+        />
+        <button
+          onClick={handleContinue}
+          className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg w-full transition"
+        >
+          Continue
+        </button>
+      </div>
+    </div>
+  )
+}
 
     </div>
   );
