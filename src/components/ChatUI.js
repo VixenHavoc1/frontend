@@ -430,7 +430,7 @@ const handleVerifySubmit = async (e) => {
       Send
     </button>
   </div>
-</div>  {/* closes main container */}
+</div> 
 
 );        
 }          
