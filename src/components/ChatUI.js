@@ -153,10 +153,10 @@ if (ok && data.email) {
 if (!show) return null;
 
   const handleContinue = () => {
-    if (!tempName.trim()) return; // prevent empty name
-    localStorage.setItem("user_name", tempName.trim());
-    onSave(tempName.trim());
-  };
+  if (!username.trim()) return;
+  localStorage.setItem("user_name", username.trim());
+  setShowUsernameModal(false);
+};
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
