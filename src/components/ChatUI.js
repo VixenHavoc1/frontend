@@ -224,12 +224,11 @@ const sendMessage = async () => {
     }
 
     const botMessage = {
-      sender: "bot",
-      text: data?.response || "Sorry, no reply received.",
-      audio: data?.audio || null,
-      image: data?.image || null,
-    };
-
+  sender: "bot",
+  text: data?.response || data?.message || "Sorry, no reply received.",
+  audio: data?.audio || null,
+  image: data?.image || null,
+};
     setMessages((prev) => [...prev, botMessage]);
 
     const newCount = messageCount + 1;
