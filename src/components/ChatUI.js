@@ -6,8 +6,6 @@ import PremiumModal from './PremiumModal';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient'
 import apiFetch, { login, signup, verifyEmail } from "../api";
-export default function UsernameModal({ show, onSave }) {
-  const [tempName, setTempName] = useState("");
 export default function ChatUI({ bot }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -627,29 +625,32 @@ const handleVerifySubmit = async (e) => {
     </motion.div>
   </div>
 )}
- <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-xl p-6 w-80 text-center">
-        <h2 className="text-xl font-semibold mb-4">
-          Hey, what's your name sweetheart?
-        </h2>
-        <input
-          type="text"
-          value={tempName}
-          onChange={(e) => setTempName(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Enter your name"
-          className="w-full border rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring focus:border-pink-500"
-        />
-        <button
-          onClick={handleContinue}
-          className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg w-full transition"
-        >
-          Continue
-        </button>
-      </div>
+ 
+{showUsernameModal && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl shadow-xl p-6 w-80 text-center">
+      <h2 className="text-xl font-semibold mb-4">
+        Hey, what's your name sweetheart?
+      </h2>
+      <input
+        type="text"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleContinue();
+        }}
+        placeholder="Enter your name"
+        className="w-full border rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring focus:border-pink-500 text-black"
+      />
+      <button
+        onClick={handleContinue}
+        className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg w-full transition"
+      >
+        Continue
+      </button>
     </div>
-  )
-}
+  </div>
+)}
 
     </div>
   );
