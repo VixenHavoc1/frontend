@@ -9,7 +9,10 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata = {
   title: "Voxella AI",
   description: "Your AI sexting chatbot",
-  viewport: "width=device-width, initial-scale=1.0", // ✅ This makes it mobile-responsive
+  viewport: "width=device-width, initial-scale=1.0", 
+  icons: {
+    icon: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic34.png", // ✅ Add this line
+  },
 };
 
 export default function RootLayout({ children }) {
