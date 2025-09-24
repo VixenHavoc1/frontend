@@ -585,7 +585,11 @@ const handleVerifySubmit = async (e) => {
       />
       <button
         onClick={() => {
-          if (username.trim()) setShowUsernameModal(false);
+          if (username.trim()) {
+            setShowUsernameModal(false);
+            // ✅ send message immediately after username is set
+            sendMessage();
+          }
         }}
         className="bg-[#5A2D8C] px-6 py-2 rounded-lg hover:bg-[#6B3B98] transition-all duration-300"
       >
@@ -594,6 +598,7 @@ const handleVerifySubmit = async (e) => {
     </motion.div>
   </div>
 )}
+
     </div>
   );
 }
