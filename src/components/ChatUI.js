@@ -575,7 +575,7 @@ const handleVerifySubmit = async (e) => {
       transition={{ duration: 0.3 }}
       className="bg-[#1F1B29]/90 rounded-2xl p-8 shadow-2xl max-w-md w-full text-white relative border border-[#5A2D8C]/40 text-center"
     >
-      <h2 className="text-2xl font-bold mb-4">Hey, what's your name sweetheart? 💖</h2>
+      <h2 className="text-2xl font-bold mb-4">Hey, what do you want me to call you sweetheart?😘 💖</h2>
       <input
         type="text"
         value={username}
