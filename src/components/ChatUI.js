@@ -35,9 +35,10 @@ const [showAgeModal, setShowAgeModal] = useState(
   !localStorage.getItem("age_verified")
 );
 const [selectedBot, setSelectedBot] = useState(null); // user picks bot first
+const [username, setUsername] = useState(localStorage.getItem("user_name") || "");
 
  const [showUsernameModal, setShowUsernameModal] = useState(false);
-const [username, setUsername] = useState('');
+
 
   const getSession = async () => {
   const token = localStorage.getItem("access_token");
@@ -586,9 +587,8 @@ const handleVerifySubmit = async (e) => {
       <button
         onClick={() => {
           if (username.trim()) {
-            setShowUsernameModal(false);
-            // ✅ send message immediately after username is set
-            sendMessage();
+    setShowUsernameModal(false);
+    localStorage.setItem("user_name", username);
           }
         }}
         className="bg-[#5A2D8C] px-6 py-2 rounded-lg hover:bg-[#6B3B98] transition-all duration-300"
