@@ -295,10 +295,10 @@ const handleInputKeyDown = (e) => {
 
   const getBotPic = (botName) => {
     const name = botName?.toLowerCase() || "";
-    if (name.includes("lily")) return "/lily.png";
-    if (name.includes("plaksha")) return "/plaksha.png";
-    if (name.includes("raven")) return "/raven.png";
-    return "/default.png";
+    if (name.includes("lily")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic5.png";
+    if (name.includes("plaksha")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic5.png";
+    if (name.includes("raven")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic5.png";
+    return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic5.png";
   };
 
  const handleSignupSubmit = async (e) => {
@@ -638,7 +638,7 @@ const handleVerifySubmit = async (e) => {
   <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
     <div className="bg-white rounded-2xl shadow-xl p-6 w-80 text-center">
       <h2 className="text-xl font-semibold mb-4">
-        Hey, what's your name sweetheart?
+        Hey, what do you want me to call you sweetheart?😘
       </h2>
       <input
         type="text"
