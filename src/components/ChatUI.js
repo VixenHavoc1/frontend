@@ -192,16 +192,27 @@ const sendMessage = async () => {
       throw new Error(data?.error || "Failed to send message");
     }
 
-    if (data?.response) {
-      setMessages((prev) => [
-        ...prev,
-        { sender: "bot", text: data.response, audio: data.audio || null, image: data.image || null }
-      ]);
-    } else if (data?.error) {
-      setMessages((prev) => [...prev, { sender: "bot", text: `⚠️ ${data.error}` }]);
-    } else {
-      setMessages((prev) => [...prev, { sender: "bot", text: "Sorry, no reply received." }]);
-    }
+    if (data?.response || data?.message) {
+  setMessages((prev) => [
+    ...prev,
+    {
+      sender: "bot",
+      text: data.response || data.message, // ✅ accept both keys
+      audio: data.audio || null,
+      image: data.image || null,
+    },
+  ]);
+} else if (data?.error) {
+  setMessages((prev) => [
+    ...prev,
+    { sender: "bot", text: `⚠️ ${data.error}` },
+  ]);
+} else {
+  setMessages((prev) => [
+    ...prev,
+    { sender: "bot", text: "Sorry, no reply received." },
+  ]);
+}
 
     const newCount = messageCount + 1;
     setMessageCount(newCount);
