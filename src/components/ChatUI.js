@@ -52,6 +52,14 @@ const handleBotSelect = (bot) => {
   }
 };
 
+  useEffect(() => {
+  const savedName = localStorage.getItem("user_name");
+  if (!savedName) {
+    setShowUsernameModal(true);
+  } else {
+    setUsername(savedName);
+  }
+}, [isAuthenticated]);
   
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -150,7 +158,7 @@ if (ok && data.email) {
     console.error("Failed to fetch user email", err);
   }
 };
-if (!show) return null;
+
 
   const handleContinue = () => {
   if (!username.trim()) return;
