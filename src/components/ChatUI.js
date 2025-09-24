@@ -265,14 +265,15 @@ const handleKeyDown = (e) => {
     return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic14.png";
   };
 
- const handleSignupSubmit = async (e) => {
+const handleSignupSubmit = async (e) => {
   e.preventDefault();
-  setError("");
+
   try {
-  await signup(email, password);
-   setShowSignup(false);
-   setShowVerify(true);
-  }  return;
+    await signup(email, password);
+    setShowSignup(false);
+    setShowVerify(true);
+  } catch (err) {
+    // ignore any errors
   }
 };
 
