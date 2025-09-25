@@ -81,13 +81,22 @@ const handleBotSelect = (bot) => {
     method: "GET",
     headers: await getAuthHeaders(),
   });
-  if (ok && data) {
-    setUserEmail(data.email);
-    setHasPaid(data.has_paid);
-    localStorage.setItem("user_email", data.email);
-    localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
-    localStorage.setItem("tier_id", data.tier_id || "");
+  if (ok && data && data.email) {
+   setUserEmail(data.email);
+   localStorage.setItem("user_email", data.email);
+ } else {
+   console.warn("No email found in /me response:", data);
+ }
+   if ("has_paid" in data) {
+     setHasPaid(!!data.has_paid);
+     localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
+   }
+   if (data.tier_id) {
+     localStorage.setItem("tier_id", data.tier_id);
   }
+ } else {
+   console.warn("Unexpected /me response:", data);
+ }
 } catch (err) {
   console.error("Failed to fetch user info:", err);
 }
@@ -326,12 +335,13 @@ const handleVerifySubmit = async (e) => {
       body: JSON.stringify({ tier_id, price_amount }),
     });
 
-   if (ok && data?.payment_url) {
-     window.location.href = data.payment_url;
-    } else {
-      console.error("Invoice error:", data);
-      alert(data?.detail || "Payment creation failed.");
-    }
+   const url = data?.payment_url || data?.payment_link; // ✅ handle both
+ if (ok && url) {
+   window.location.href = url;
+ } else {
+   console.error("Invoice error:", data);
+   alert(data?.detail || "Payment creation failed.");
+}
   } catch (err) {
     console.error("Invoice error:", err);
     alert("Failed to initiate payment.");
