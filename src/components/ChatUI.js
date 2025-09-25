@@ -94,9 +94,7 @@ const handleBotSelect = (bot) => {
    if (data.tier_id) {
      localStorage.setItem("tier_id", data.tier_id);
   }
- } else {
-   console.warn("Unexpected /me response:", data);
- }
+ 
 } catch (err) {
   console.error("Failed to fetch user info:", err);
 }
