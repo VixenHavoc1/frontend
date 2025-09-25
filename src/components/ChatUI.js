@@ -189,16 +189,21 @@ const handleNameConfirm = async () => {
 
 const sendMessage = async () => {
   if (!isAuthenticated) {
+    console.warn("⚠️ Not authenticated — showing signup modal");
     setShowSignup(true);
     return;
   }
 
   if (!hasPaid && messageCount >= 5) {
+    console.warn("⚠️ Message limit reached — showing paywall modal");
     setShowPaywall(true);
     return;
   }
 
-  if (!input.trim()) return;
+  if (!input.trim()) {
+    console.warn("⚠️ Ignored empty message input");
+    return;
+  }
 
   const userMessage = { sender: "user", text: input };
   setMessages((prev) => [...prev, userMessage]);
@@ -207,49 +212,60 @@ const sendMessage = async () => {
 
   try {
     const headers = await getAuthHeaders();
+    console.log("🟢 Sending message:", {
+      input,
+      botName: bot?.name || "Default",
+      userName: localStorage.getItem("userName") || null,
+      headers,
+    });
 
     const { ok, status, data } = await apiFetch("/chat", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",   // ✅ required
-        ...headers,                           // ✅ Authorization
+        "Content-Type": "application/json",
+        ...headers,
       },
       body: JSON.stringify({
-  message: input,
-  bot_name: bot?.name || "Default",
+        message: input,
+        bot_name: bot?.name || "Default",
         user_name: localStorage.getItem("userName") || null,
- }),
-
+      }),
     });
 
+    console.log("📩 Chat response:", { ok, status, data });
+
     if (status === 403) {
-      console.log("🚫 403 Forbidden — triggering paywall");
+      console.error("🚫 403 Forbidden — triggering paywall");
       setShowPaywall(true);
       return;
     }
 
     if (!ok) {
+      console.error("❌ Chat request failed:", data);
       throw new Error(data?.error || "Failed to send message");
     }
 
     const botMessage = {
-  sender: "bot",
-  text: data?.response || data?.message || "Sorry, no reply received.",
-  audio: data?.audio || null,
-  image: data?.image || null,
-};
+      sender: "bot",
+      text: data?.response || data?.message || "[No reply received]",
+      audio: data?.audio || null,
+      image: data?.image || null,
+    };
+
+    console.log("🤖 Bot message constructed:", botMessage);
+
     setMessages((prev) => [...prev, botMessage]);
 
     const newCount = messageCount + 1;
+    console.log("📊 Updated message count:", newCount);
     setMessageCount(newCount);
     localStorage.setItem("message_count", newCount.toString());
   } catch (err) {
-    console.error("Message error:", err);
+    console.error("🔥 Message error:", err);
   } finally {
     setIsTyping(false);
   }
 };
-
 
 const handleKeyDown = (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
