@@ -69,24 +69,14 @@ const handleBotSelect = (bot) => {
   }, []);
   
  // ---- Initialize user after login/signup/verify ----
-useEffect(() => {
+
+ useEffect(() => {
   const initializeUser = async () => {
     const token = localStorage.getItem("access_token");
     if (!token) return; // not logged in
 
     try {
-      const data = await fetchMe(); // uses apiFetch internally
-      if (!data) {
-        console.warn("No user data found.");
-        return;
-      }
-
-      setUserEmail(data.email);
-      setHasPaid(data.has_paid);
-      localStorage.setItem("userEmail", data.email);
-      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
-      localStorage.setItem("userId", data.id); // save DB user id for chat
-
+      await fetchUserEmail(); // fetches and sets userEmail, userId, hasPaid
       setIsAuthenticated(true);
 
       // Show name modal if display name not set
