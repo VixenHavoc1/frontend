@@ -105,31 +105,45 @@ const getAuthHeaders = () => {
   const token = localStorage.getItem("access_token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
+const authHeaders = { Authorization: `Bearer ${localStorage.getItem("access_token")}` };
 
+const data = await apiFetch("/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", ...authHeaders },
+  body: JSON.stringify({ message: input, bot_name: bot.name, user_id, user_name }),
+});
+  
 async function fetchUserEmail() {
   const token = localStorage.getItem("access_token");
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  if (!token) {
+    console.warn("No token found");
+    return;
+  }
 
-  const { ok, status, data } = await apiFetch("/me", {
+  const { ok, data } = await apiFetch("/me", {
     method: "GET",
-    headers,
+    headers: { Authorization: `Bearer ${token}` },
   });
 
-  if (ok && !data.error && data.email) {
+  if (ok && data.email) {
     setUserEmail(data.email);
-    localStorage.setItem("userEmail", data.email);
-    if (data.display_name) {
-      setUserName(data.display_name);
-      localStorage.setItem("userName", data.display_name);
-    }
+    setUserName(data.display_name || "");
     setHasPaid(data.has_paid);
+    localStorage.setItem("userEmail", data.email);
+    localStorage.setItem("userName", data.display_name || "");
     localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
   } else {
-    console.warn("fetchUserEmail failed", status, data);
-    setUserEmail(null);
-    localStorage.removeItem("userEmail");
+    console.error("fetchUserEmail failed:", data.detail);
+    if (data.detail === "Invalid or expired token") {
+      // clear tokens and force login
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      setIsAuthenticated(false);
+      setShowLogin(true);
+    }
   }
 }
+
 
 useEffect(() => {
   const storedName = localStorage.getItem("userName");
