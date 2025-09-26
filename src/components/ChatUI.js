@@ -28,7 +28,7 @@ export default function ChatUI({ bot }) {
   const [verifyCode, setVerifyCode] = useState('');
   const [showNameModal, setShowNameModal] = useState(false);
 const [userName, setUserName] = useState("");
-const userId = userEmail || "guest"; // fallback if not logged in
+const [userId, setUserId] = useState(localStorage.getItem("userId") || null);
 const CHAT_BACKEND_URL = "https://api.voxellaai.site";
 const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
 const [showPremiumUnlocked, setShowPremiumUnlocked] = useState(false);
@@ -170,11 +170,11 @@ const sendMessage = async () => {
     return;
   }
 
-  const user_id = localStorage.getItem("userId");
-  if (!user_id) {
-    console.error("User ID missing!");
-    return;
-  }
+  if (!userId) {
+  console.error("User ID missing!");
+  return;
+}
+
 
   if (!hasPaid && messageCount >= 5) {
     setShowPaywall(true);
@@ -198,7 +198,7 @@ const sendMessage = async () => {
       body: JSON.stringify({
         message: input,
         bot_name: bot?.name || "Default",
-        user_id,
+        user_id: userId,
         user_name,
       }),
     });
@@ -360,18 +360,23 @@ const fetchUserEmail = async () => {
     const data = await res.json();
 
     if (res.ok && data?.email) {
-      setUserEmail(data.email);
-      localStorage.setItem("userEmail", data.email);
-      if (data.display_name) {
-        setUserName(data.display_name);
-        localStorage.setItem("userName", data.display_name);
-      }
-      setHasPaid(data.has_paid);
-      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
-    } else {
-      console.warn("fetchUserEmail failed", res.status, data);
-      silentLogout();
-    }
+  setUserEmail(data.email);
+  localStorage.setItem("userEmail", data.email);
+
+  setUserId(data.id);
+  localStorage.setItem("userId", data.id);
+
+  if (data.display_name) {
+    setUserName(data.display_name);
+    localStorage.setItem("userName", data.display_name);
+  }
+  setHasPaid(data.has_paid);
+  localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
+} else {
+  console.warn("fetchUserEmail failed", res.status, data);
+  silentLogout();
+}
+
   } catch (err) {
     console.error("fetchUserEmail error:", err);
     silentLogout();
