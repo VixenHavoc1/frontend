@@ -2,7 +2,7 @@
 const API_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || "https://api.voxellaai.site") + "/api";
 
 /**
- * Safe JSON parser for fetch Responses
+ * Safe JSON parser
  */
 async function getJsonSafe(res) {
   if (!res) return null;
@@ -14,21 +14,18 @@ async function getJsonSafe(res) {
 }
 
 /**
- * Silent logout: clear tokens and redirect to /login
+ * Silent logout
  */
 function silentLogout() {
   try {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
-  } catch (e) {
-    // ignore storage errors
-  }
+  } catch (e) {}
   window.location.href = "/login";
 }
 
 /**
- * Try to refresh access token using stored refresh_token.
- * Returns true on success (tokens updated), false on failure.
+ * Refresh access token using stored refresh token
  */
 async function tryRefreshToken() {
   const refresh = localStorage.getItem("refresh_token");
@@ -44,12 +41,11 @@ async function tryRefreshToken() {
     if (!res.ok) return false;
 
     const data = await getJsonSafe(res);
-    if (!data || !data.access_token) return false;
+    if (!data?.access_token) return false;
 
     localStorage.setItem("access_token", data.access_token);
-    if (data.refresh_token) {
-      localStorage.setItem("refresh_token", data.refresh_token);
-    }
+    if (data.refresh_token) localStorage.setItem("refresh_token", data.refresh_token);
+
     return true;
   } catch (err) {
     console.error("Silent refresh failed:", err);
@@ -58,24 +54,21 @@ async function tryRefreshToken() {
 }
 
 /**
- * Main fetch wrapper
+ * Main fetch wrapper with automatic token refresh
  */
 async function apiFetch(endpoint, options = {}) {
   try {
     let token = localStorage.getItem("access_token");
 
-    const baseHeaders = {
+    const headers = {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     };
 
-    let res = await fetch(`${API_URL}${endpoint}`, {
-      ...options,
-      headers: baseHeaders,
-    });
+    let res = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
 
-    // If unauthorized, try refresh and retry once
+    // Retry once if 401
     if (res.status === 401) {
       const refreshed = await tryRefreshToken();
       if (refreshed) {
@@ -86,10 +79,7 @@ async function apiFetch(endpoint, options = {}) {
           ...(options.headers || {}),
         };
         try {
-          return await fetch(`${API_URL}${endpoint}`, {
-            ...options,
-            headers: retryHeaders,
-          });
+          res = await fetch(`${API_URL}${endpoint}`, { ...options, headers: retryHeaders });
         } catch (err) {
           console.error("Silent retry failed:", err);
           return null;
@@ -102,7 +92,7 @@ async function apiFetch(endpoint, options = {}) {
 
     return res;
   } catch (err) {
-    console.error("apiFetch silent error:", err);
+    console.error("apiFetch error:", err);
     return null;
   }
 }
@@ -114,8 +104,8 @@ export async function login(email, password) {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
-
   if (!res) return null;
+
   const data = await getJsonSafe(res);
   if (!res.ok || !data) return null;
 
@@ -130,12 +120,10 @@ export async function signup(email, password) {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
-
   if (!res) return null;
-  const data = await getJsonSafe(res);
-  if (!res.ok) return null;
 
-  return data || null;
+  const data = await getJsonSafe(res);
+  return res.ok ? data : null;
 }
 
 export async function verifyEmail(email, code) {
@@ -143,18 +131,17 @@ export async function verifyEmail(email, code) {
     method: "POST",
     body: JSON.stringify({ email, code }),
   });
-
   if (!res) return null;
-  const data = await getJsonSafe(res);
-  if (!res.ok) return null;
 
-  return data || null;
+  const data = await getJsonSafe(res);
+  return res.ok ? data : null;
 }
 
-/* Fetch user info */
+/* Fetch logged-in user info */
 export async function fetchMe() {
   const res = await apiFetch("/me");
   if (!res) return null;
+
   const data = await getJsonSafe(res);
   return res.ok && data ? data : null;
 }
@@ -165,13 +152,13 @@ export async function sendMessage(message, bot_name, user_name) {
     method: "POST",
     body: JSON.stringify({ message, bot_name, user_name }),
   });
-
   if (!res) return null;
+
   const data = await getJsonSafe(res);
   return res.ok && data ? data : null;
 }
 
-/* Optional explicit logout */
+/* Logout */
 export function logout() {
   silentLogout();
 }
