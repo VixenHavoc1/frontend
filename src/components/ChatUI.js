@@ -81,20 +81,13 @@ const handleBotSelect = (bot) => {
     method: "GET",
     headers: await getAuthHeaders(),
   });
-  if (ok && data && data.email) {
-   setUserEmail(data.email);
-   localStorage.setItem("user_email", data.email);
- } else {
-   console.warn("No email found in /me response:", data);
- }
-   if ("has_paid" in data) {
-     setHasPaid(!!data.has_paid);
-     localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
-   }
-   if (data.tier_id) {
-     localStorage.setItem("tier_id", data.tier_id);
+  if (ok && data) {
+    setUserEmail(data.email);
+    setHasPaid(data.has_paid);
+    localStorage.setItem("user_email", data.email);
+    localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
+    localStorage.setItem("tier_id", data.tier_id || "");
   }
- 
 } catch (err) {
   console.error("Failed to fetch user info:", err);
 }
@@ -187,21 +180,16 @@ const handleNameConfirm = async () => {
 
 const sendMessage = async () => {
   if (!isAuthenticated) {
-    console.warn("⚠️ Not authenticated — showing signup modal");
     setShowSignup(true);
     return;
   }
 
   if (!hasPaid && messageCount >= 5) {
-    console.warn("⚠️ Message limit reached — showing paywall modal");
     setShowPaywall(true);
     return;
   }
 
-  if (!input.trim()) {
-    console.warn("⚠️ Ignored empty message input");
-    return;
-  }
+  if (!input.trim()) return;
 
   const userMessage = { sender: "user", text: input };
   setMessages((prev) => [...prev, userMessage]);
@@ -210,60 +198,50 @@ const sendMessage = async () => {
 
   try {
     const headers = await getAuthHeaders();
-    console.log("🟢 Sending message:", {
-      input,
-      botName: bot?.name || "Default",
-      userName: localStorage.getItem("userName") || null,
-      headers,
-    });
 
     const { ok, status, data } = await apiFetch("/chat", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        ...headers,
+        "Content-Type": "application/json",   // ✅ required
+        ...headers,                           // ✅ Authorization
       },
       body: JSON.stringify({
-        message: input,
-        bot_name: bot?.name || "Default",
+  message: input,
+  bot_name: bot?.name || "Default",
         user_name: localStorage.getItem("userName") || null,
-      }),
+ }),
+
     });
 
-    console.log("📩 Chat response:", { ok, status, data });
-
     if (status === 403) {
-      console.error("🚫 403 Forbidden — triggering paywall");
+      console.log("🚫 403 Forbidden — triggering paywall");
       setShowPaywall(true);
       return;
     }
 
     if (!ok) {
-      console.error("❌ Chat request failed:", data);
       throw new Error(data?.error || "Failed to send message");
     }
 
     const botMessage = {
       sender: "bot",
-      text: data?.response || data?.message || "[No reply received]",
+      text: data?.response || "Sorry, no reply received.",
       audio: data?.audio || null,
       image: data?.image || null,
     };
 
-    console.log("🤖 Bot message constructed:", botMessage);
-
     setMessages((prev) => [...prev, botMessage]);
 
     const newCount = messageCount + 1;
-    console.log("📊 Updated message count:", newCount);
     setMessageCount(newCount);
     localStorage.setItem("message_count", newCount.toString());
   } catch (err) {
-    console.error("🔥 Message error:", err);
+    console.error("Message error:", err);
   } finally {
     setIsTyping(false);
   }
 };
+
 
 const handleKeyDown = (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
@@ -349,13 +327,12 @@ const handleVerifySubmit = async (e) => {
       body: JSON.stringify({ tier_id, price_amount }),
     });
 
-   const url = data?.payment_url || data?.payment_link; // ✅ handle both
- if (ok && url) {
-   window.location.href = url;
- } else {
-   console.error("Invoice error:", data);
-   alert(data?.detail || "Payment creation failed.");
-}
+   if (ok && data?.payment_url) {
+     window.location.href = data.payment_url;
+    } else {
+      console.error("Invoice error:", data);
+      alert(data?.detail || "Payment creation failed.");
+    }
   } catch (err) {
     console.error("Invoice error:", err);
     alert("Failed to initiate payment.");
