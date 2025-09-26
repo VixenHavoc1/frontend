@@ -68,34 +68,39 @@ const handleBotSelect = (bot) => {
     }
   }, []);
   
-  useEffect(() => {
-    const initializeUser = async () => {
-      const session = await getSession();
-      const token = session?.access_token;
-      if (!token) return;
-  
-     setIsAuthenticated(true);
+ // ---- Initialize user after login/signup/verify ----
+useEffect(() => {
+  const initializeUser = async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) return; // not logged in
 
-     try {
-  const { ok, data } = await apiFetch("/me", {
-    method: "GET",
-    headers: await getAuthHeaders(),
-  });
-  if (ok && data) {
-    setUserEmail(data.email);
-    setHasPaid(data.has_paid);
-    localStorage.setItem("user_email", data.email);
-    localStorage.setItem("has_paid", data.has_paid ? "true" : "false");
-    localStorage.setItem("tier_id", data.tier_id || "");
-  }
-} catch (err) {
-  console.error("Failed to fetch user info:", err);
-}
+    try {
+      const data = await fetchMe(); // uses apiFetch internally
+      if (!data) {
+        console.warn("No user data found.");
+        return;
+      }
 
+      setUserEmail(data.email);
+      setHasPaid(data.has_paid);
+      localStorage.setItem("userEmail", data.email);
+      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
+      localStorage.setItem("userId", data.id); // save DB user id for chat
 
-    };
-    initializeUser();
-  }, []);
+      setIsAuthenticated(true);
+
+      // Show name modal if display name not set
+      if (!localStorage.getItem("nameSet")) {
+        setShowNameModal(true);
+      }
+    } catch (err) {
+      console.error("Failed to fetch user info:", err);
+    }
+  };
+
+  initializeUser();
+}, []);
+
   
  useEffect(() => {
   const shown = localStorage.getItem("premium_modal_shown");
@@ -175,6 +180,7 @@ const handleNameConfirm = async () => {
   }
 };
 
+// ---- sendMessage function ----
 const sendMessage = async () => {
   if (!isAuthenticated) {
     setShowSignup(true);
@@ -194,38 +200,37 @@ const sendMessage = async () => {
   setIsTyping(true);
 
   try {
-    const headers = await getAuthHeaders();
+    const user_id = localStorage.getItem("userId"); // always use saved DB id
+    const user_name = localStorage.getItem("userName") || "";
 
-    const { ok, status, data } = await apiFetch("/chat", {
+    const data = await apiFetch("/chat", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",   // ✅ required
-        ...headers,                           // ✅ Authorization
-      },
       body: JSON.stringify({
-  message: input,
-  bot_name: bot?.name || "Default",
-        user_id: userEmail,  
-        user_name: localStorage.getItem("userName") || null,
- }),
-
+        message: input,
+        bot_name: bot?.name || "Default",
+        user_id,
+        user_name,
+      }),
     });
 
-    if (status === 403) {
-      console.log("🚫 403 Forbidden — triggering paywall");
-      setShowPaywall(true);
+    if (!data || data.error) {
+      if (data?.code === 403) {
+        console.log("🚫 403 Forbidden — triggering paywall");
+        setShowPaywall(true);
+      } else if (data?.code === 401) {
+        console.log("🚫 401 Unauthorized — token may be invalid");
+        silentLogout();
+      } else {
+        throw new Error(data?.error || "Failed to send message");
+      }
       return;
-    }
-
-    if (!ok) {
-      throw new Error(data?.error || "Failed to send message");
     }
 
     const botMessage = {
       sender: "bot",
-      text: data?.response || "Sorry, no reply received.",
-      audio: data?.audio || null,
-      image: data?.image || null,
+      text: data.response || "Sorry, no reply received.",
+      audio: data.audio || null,
+      image: data.image || null,
     };
 
     setMessages((prev) => [...prev, botMessage]);
@@ -239,6 +244,7 @@ const sendMessage = async () => {
     setIsTyping(false);
   }
 };
+
 
 
 const handleKeyDown = (e) => {
