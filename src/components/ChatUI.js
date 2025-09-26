@@ -164,62 +164,89 @@ const handleNameConfirm = async () => {
 };
 
 // ---- sendMessage function ----
-
 const sendMessage = async () => {
   if (!isAuthenticated) {
     setShowSignup(true);
     return;
   }
-  if (!userId) return;
+
+  if (!userId) {
+    console.error("User ID missing!");
+    return;
+  }
 
   if (!hasPaid && messageCount >= 5) {
     setShowPaywall(true);
     return;
   }
+
   if (!input.trim()) return;
 
   const userMessage = { sender: "user", text: input };
-  setMessages(prev => [...prev, userMessage]);
+  setMessages((prev) => [...prev, userMessage]);
   setInput("");
   setIsTyping(true);
 
   try {
+    const user_name = localStorage.getItem("userName") || "";
     const headers = await getAuthHeaders();
+
     const data = await apiFetch("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
-      body: JSON.stringify({ message: input, bot_name: bot?.name || "Default", user_id: userId, user_name: userName }),
+      body: JSON.stringify({
+        message: input,
+        bot_name: bot?.name || "Default",
+        user_id: userId,
+        user_name,
+      }),
     });
 
+    if (!data) {
+      throw new Error("No response from server");
+    }
+
+    // Always get reply from `data.response`
     const botMessage = {
       sender: "bot",
       text: data.response || "Sorry, no reply received.",
       audio: data.audio || null,
       image: data.image || null,
     };
-    setMessages(prev => [...prev, botMessage]);
 
+    setMessages((prev) => [...prev, botMessage]);
+
+    // Update free messages left if backend sends it
     if (data.free_messages_left !== undefined) {
-      setMessageCount(5 - data.free_messages_left);
-      localStorage.setItem("message_count", (5 - data.free_messages_left).toString());
+      const newCount = 5 - data.free_messages_left;
+      setMessageCount(newCount);
+      localStorage.setItem("message_count", newCount.toString());
+      // Trigger paywall if limit reached
+      if (!hasPaid && newCount >= 5) setShowPaywall(true);
+    } else {
+      // fallback increment
+      const newCount = messageCount + 1;
+      setMessageCount(newCount);
+      localStorage.setItem("message_count", newCount.toString());
     }
 
+    // Sync hasPaid status
     if (data.has_paid !== undefined) {
       setHasPaid(data.has_paid);
       localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
     }
-
-    if (data.display_name) {
-      setUserName(data.display_name);
-      localStorage.setItem("userName", data.display_name);
-    }
-
   } catch (err) {
     console.error("Message error:", err);
+    const fallbackBotMessage = {
+      sender: "bot",
+      text: "Sorry, no reply received.",
+    };
+    setMessages((prev) => [...prev, fallbackBotMessage]);
   } finally {
     setIsTyping(false);
   }
 };
+
      
 const handleKeyDown = (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
