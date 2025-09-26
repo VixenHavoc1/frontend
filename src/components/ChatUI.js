@@ -164,52 +164,32 @@ const handleNameConfirm = async () => {
 };
 
 // ---- sendMessage function ----
+
 const sendMessage = async () => {
   if (!isAuthenticated) {
     setShowSignup(true);
     return;
   }
+  if (!userId) return;
 
-  if (!userId) {
-    console.error("User ID missing!");
-    return;
-  }
-
-  // --- Check free messages + paid status ---
-  const freeMessagesLeft = 5 - messageCount; // sync with fetchUserData
-  if (!hasPaid && freeMessagesLeft <= 0) {
+  if (!hasPaid && messageCount >= 5) {
     setShowPaywall(true);
     return;
   }
-
   if (!input.trim()) return;
 
   const userMessage = { sender: "user", text: input };
-  setMessages((prev) => [...prev, userMessage]);
+  setMessages(prev => [...prev, userMessage]);
   setInput("");
   setIsTyping(true);
 
   try {
-    const user_name = localStorage.getItem("userName") || "";
     const headers = await getAuthHeaders();
-
     const data = await apiFetch("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
-      body: JSON.stringify({
-        message: input,
-        bot_name: bot?.name || "Default",
-        user_id: userId,
-        user_name,
-      }),
+      body: JSON.stringify({ message: input, bot_name: bot?.name || "Default", user_id: userId, user_name: userName }),
     });
-
-    if (!data || data.error) {
-      if (data?.code === 403) setShowPaywall(true);
-      else if (data?.code === 401) silentLogout();
-      else throw new Error(data?.error || "Failed to send message");
-      return;
-    }
 
     const botMessage = {
       sender: "bot",
@@ -217,13 +197,22 @@ const sendMessage = async () => {
       audio: data.audio || null,
       image: data.image || null,
     };
+    setMessages(prev => [...prev, botMessage]);
 
-    setMessages((prev) => [...prev, botMessage]);
+    if (data.free_messages_left !== undefined) {
+      setMessageCount(5 - data.free_messages_left);
+      localStorage.setItem("message_count", (5 - data.free_messages_left).toString());
+    }
 
-    // --- Update free messages left ---
-    const newCount = messageCount + 1;
-    setMessageCount(newCount);
-    localStorage.setItem("message_count", newCount.toString());
+    if (data.has_paid !== undefined) {
+      setHasPaid(data.has_paid);
+      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
+    }
+
+    if (data.display_name) {
+      setUserName(data.display_name);
+      localStorage.setItem("userName", data.display_name);
+    }
 
   } catch (err) {
     console.error("Message error:", err);
@@ -231,7 +220,7 @@ const sendMessage = async () => {
     setIsTyping(false);
   }
 };
-
+     
 const handleKeyDown = (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault(); // prevent newline on Enter
