@@ -1,5 +1,6 @@
 // api.js
 const API_BASE_URL = "https://www.voxellaai.site";
+
 // --- helpers ---
 async function getJsonSafe(res) {
   try {
@@ -16,7 +17,7 @@ function silentLogout() {
   window.location.href = "/login";
 }
 
-async function apiFetch(endpoint, options = {}, retry = true) {
+export async function apiFetch(endpoint, options = {}, retry = true) {
   const accessToken = localStorage.getItem("access_token");
 
   const res = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -100,12 +101,11 @@ export async function fetchMe() {
   if (!res) return null;
 
   const data = await getJsonSafe(res);
-  if (!res.ok || !data || data.error) return null; // fixed: filter backend errors
-
+  if (!res.ok || !data || data.error) return null;
   return data;
 }
 
-export async function logout() {
+export function logout() {
   silentLogout();
 }
 
