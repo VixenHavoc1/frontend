@@ -72,26 +72,16 @@ const handleBotSelect = (bot) => {
 
  useEffect(() => {
   const initializeUser = async () => {
-    const token = localStorage.getItem("access_token");
-    if (!token) return; // not logged in
-
     try {
-      await fetchUserEmail(); // fetches and sets userEmail, userId, hasPaid
+      await fetchUserEmail(); // sets user info in localStorage
       setIsAuthenticated(true);
-
-      // Show name modal if display name not set
-      if (!localStorage.getItem("nameSet")) {
-        setShowNameModal(true);
-      }
     } catch (err) {
       console.error("Failed to fetch user info:", err);
     }
   };
-
   initializeUser();
 }, []);
 
-  
  useEffect(() => {
   const shown = localStorage.getItem("premium_modal_shown");
   if (hasPaid && !shown) {
