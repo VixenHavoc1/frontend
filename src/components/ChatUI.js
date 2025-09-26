@@ -66,20 +66,7 @@ const handleBotSelect = (bot) => {
       setMessageCount(parseInt(savedCount, 10));
     }
   }, []);
-  
- // ---- Initialize user after login/signup/verify ----
 
- useEffect(() => {
-  const initializeUser = async () => {
-    try {
-      await fetchUserEmail(); // sets user info in localStorage
-      setIsAuthenticated(true);
-    } catch (err) {
-      console.error("Failed to fetch user info:", err);
-    }
-  };
-  initializeUser();
-}, []);
 
  useEffect(() => {
   const shown = localStorage.getItem("premium_modal_shown");
@@ -118,14 +105,15 @@ const getAuthHeaders = async () => {
 
   if (!token && refresh) {
     try {
-      const res = await apiFetch("/refresh-token", {
+      const res = await fetch(`${CHAT_BACKEND_URL}/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh_token: refresh }),
       });
+      const data = await res.json();
 
-      if (res.ok && res.data.access_token) {
-        token = res.data.access_token;
+      if (res.ok && data?.access_token) {
+        token = data.access_token;
         localStorage.setItem("access_token", token);
       } else {
         silentLogout();
@@ -138,36 +126,6 @@ const getAuthHeaders = async () => {
 
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
-
-// ---- fetchUserEmail (with access + refresh token handling) ----
-const fetchUserEmail = async () => {
-  try {
-    const headers = await getAuthHeaders();
-    const { ok, status, data } = await apiFetch("/me", {
-      method: "GET",
-      headers,
-    });
-
-    if (ok && data && data.email) {
-      setUserEmail(data.email);
-      localStorage.setItem("userEmail", data.email);
-      if (data.display_name) {
-        setUserName(data.display_name);
-        localStorage.setItem("userName", data.display_name);
-      }
-      setHasPaid(data.has_paid);
-      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
-    } else {
-      console.warn("fetchUserEmail failed", status, data);
-      silentLogout();
-    }
-  } catch (err) {
-    console.error("fetchUserEmail error:", err);
-    silentLogout();
-  }
-};
-
-  
 
 
 useEffect(() => {
@@ -391,6 +349,32 @@ await fetchUserEmail(); // now /me works
   } catch (err) {
     console.error("Login error:", err);
     setError(err.message || "Something went wrong. Please try again.");
+  }
+};
+const fetchUserEmail = async () => {
+  try {
+    const headers = await getAuthHeaders();
+    if (!headers.Authorization) return; // skip if no token
+
+    const res = await apiFetch("/me", { method: "GET", headers });
+    const data = await res.json();
+
+    if (res.ok && data?.email) {
+      setUserEmail(data.email);
+      localStorage.setItem("userEmail", data.email);
+      if (data.display_name) {
+        setUserName(data.display_name);
+        localStorage.setItem("userName", data.display_name);
+      }
+      setHasPaid(data.has_paid);
+      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
+    } else {
+      console.warn("fetchUserEmail failed", res.status, data);
+      silentLogout();
+    }
+  } catch (err) {
+    console.error("fetchUserEmail error:", err);
+    silentLogout();
   }
 };
 
