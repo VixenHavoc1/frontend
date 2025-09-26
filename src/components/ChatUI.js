@@ -122,27 +122,24 @@ const getAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-
-
-const fetchUserEmail = async () => {
-const token = localStorage.getItem("access_token");
-if (!token) return;
-
-  try {
-    
-  const { ok, data } = await apiFetch("/me", {
-  method: "GET",
-  headers: await getAuthHeaders(),
-});
-
-if (ok && data.email) {
-  setUserEmail(data.email);
-}
-
-  } catch (err) {
-    console.error("Failed to fetch user email", err);
+async function fetchUserEmail() {
+  const { ok, status, data } = await apiFetch("/me", { method: "GET" });
+  if (ok && !data.error && data.email) {
+    setUserEmail(data.email);
+    localStorage.setItem("userEmail", data.email);
+    if (data.display_name) {
+      setDisplayName(data.display_name);
+      localStorage.setItem("userName", data.display_name);
+    }
+    setHasPaid(data.has_paid);
+    localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
+  } else {
+    console.warn("fetchUserEmail failed", status, data);
+    setUserEmail(null);
+    localStorage.removeItem("userEmail");
   }
-};
+}
+  
 useEffect(() => {
   const storedName = localStorage.getItem("userName");
   const nameSet = localStorage.getItem("nameSet");
