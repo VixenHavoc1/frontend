@@ -1,5 +1,5 @@
 // api.js
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "https://api.voxellaai.site";
+const API_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || "https://api.voxellaai.site") + "/api";
 
 /**
  * Safe JSON parser for fetch Responses
@@ -14,7 +14,7 @@ async function getJsonSafe(res) {
 }
 
 /**
- * Silent logout: clear tokens and redirect to /login (no UI message).
+ * Silent logout: clear tokens and redirect to /login
  */
 function silentLogout() {
   try {
@@ -23,7 +23,6 @@ function silentLogout() {
   } catch (e) {
     // ignore storage errors
   }
-  // silent redirect to login
   window.location.href = "/login";
 }
 
@@ -49,7 +48,6 @@ async function tryRefreshToken() {
 
     localStorage.setItem("access_token", data.access_token);
     if (data.refresh_token) {
-      // only overwrite if backend returns a new refresh token
       localStorage.setItem("refresh_token", data.refresh_token);
     }
     return true;
@@ -60,8 +58,7 @@ async function tryRefreshToken() {
 }
 
 /**
- * Main silent fetch wrapper.
- * Returns a fetch Response on success, or null on any failure.
+ * Main fetch wrapper
  */
 async function apiFetch(endpoint, options = {}) {
   try {
@@ -78,30 +75,26 @@ async function apiFetch(endpoint, options = {}) {
       headers: baseHeaders,
     });
 
-    // If unauthorized, try a silent refresh and retry once
+    // If unauthorized, try refresh and retry once
     if (res.status === 401) {
       const refreshed = await tryRefreshToken();
       if (refreshed) {
-        // retry original request with updated token
         token = localStorage.getItem("access_token");
         const retryHeaders = {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
           ...(options.headers || {}),
         };
-
         try {
-          const retryRes = await fetch(`${API_URL}${endpoint}`, {
+          return await fetch(`${API_URL}${endpoint}`, {
             ...options,
             headers: retryHeaders,
           });
-          return retryRes;
         } catch (err) {
           console.error("Silent retry failed:", err);
           return null;
         }
       } else {
-        // refresh failed -> silent logout & redirect
         silentLogout();
         return null;
       }
@@ -109,18 +102,13 @@ async function apiFetch(endpoint, options = {}) {
 
     return res;
   } catch (err) {
-    // swallow network/other errors silently
     console.error("apiFetch silent error:", err);
     return null;
   }
 }
 
-/* ---- Auth helpers (silent) ---- */
+/* ---- Auth helpers ---- */
 
-/**
- * Login: returns parsed data on success, or null on failure.
- * Also stores tokens returned by the backend.
- */
 export async function login(email, password) {
   const res = await apiFetch("/login", {
     method: "POST",
@@ -128,23 +116,15 @@ export async function login(email, password) {
   });
 
   if (!res) return null;
-
   const data = await getJsonSafe(res);
   if (!res.ok || !data) return null;
 
-  if (data.access_token) {
-    localStorage.setItem("access_token", data.access_token);
-  }
-  if (data.refresh_token) {
-    localStorage.setItem("refresh_token", data.refresh_token);
-  }
+  if (data.access_token) localStorage.setItem("access_token", data.access_token);
+  if (data.refresh_token) localStorage.setItem("refresh_token", data.refresh_token);
 
   return data;
 }
 
-/**
- * Signup: returns parsed data on success, or null on failure.
- */
 export async function signup(email, password) {
   const res = await apiFetch("/signup", {
     method: "POST",
@@ -152,16 +132,12 @@ export async function signup(email, password) {
   });
 
   if (!res) return null;
-
   const data = await getJsonSafe(res);
   if (!res.ok) return null;
 
   return data || null;
 }
 
-/**
- * verifyEmail: returns parsed data on success, or null on failure.
- */
 export async function verifyEmail(email, code) {
   const res = await apiFetch("/verify", {
     method: "POST",
@@ -169,17 +145,36 @@ export async function verifyEmail(email, code) {
   });
 
   if (!res) return null;
-
   const data = await getJsonSafe(res);
   if (!res.ok) return null;
 
   return data || null;
 }
 
-/* Optional explicit logout you can call from UI */
+/* Fetch user info */
+export async function fetchMe() {
+  const res = await apiFetch("/me");
+  if (!res) return null;
+  const data = await getJsonSafe(res);
+  return res.ok && data ? data : null;
+}
+
+/* Chat endpoint */
+export async function sendMessage(message, bot_name, user_name) {
+  const res = await apiFetch("/chat", {
+    method: "POST",
+    body: JSON.stringify({ message, bot_name, user_name }),
+  });
+
+  if (!res) return null;
+  const data = await getJsonSafe(res);
+  return res.ok && data ? data : null;
+}
+
+/* Optional explicit logout */
 export function logout() {
   silentLogout();
 }
 
-/* default export - raw fetch wrapper (returns Response or null) */
+/* Default export */
 export default apiFetch;
