@@ -1,8 +1,7 @@
-// api.js
-const API_BASE_URL = "https://www.voxellaai.site";
+const API_BASE_URL = "https://api.voxellaai.site";
 
 // --- helpers ---
-async function getJsonSafe(res) {
+export async function getJsonSafe(res) {
   try {
     return await res.json();
   } catch {
@@ -10,7 +9,7 @@ async function getJsonSafe(res) {
   }
 }
 
-function silentLogout() {
+export function silentLogout() {
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
   localStorage.removeItem("userEmail");
@@ -31,18 +30,15 @@ export async function apiFetch(endpoint, options = {}, retry = true) {
 
   if (res.status === 401 && retry) {
     const refreshed = await tryRefreshToken();
-    if (refreshed) {
-      return apiFetch(endpoint, options, false);
-    } else {
-      silentLogout();
-      return null;
-    }
+    if (refreshed) return apiFetch(endpoint, options, false);
+    silentLogout();
+    return null;
   }
 
   return res;
 }
 
-async function tryRefreshToken() {
+export async function tryRefreshToken() {
   const refreshToken = localStorage.getItem("refresh_token");
   if (!refreshToken) return false;
 
@@ -66,12 +62,9 @@ async function tryRefreshToken() {
 
 // --- auth ---
 export async function login(email, password) {
-  const res = await apiFetch("/login", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  });
+  const res = await apiFetch("/login", { method: "POST", body: JSON.stringify({ email, password }) });
   const data = await getJsonSafe(res);
-  if (!res || !res.ok || !data?.access_token) return null;
+  if (!res?.ok || !data?.access_token) return null;
 
   localStorage.setItem("access_token", data.access_token);
   localStorage.setItem("refresh_token", data.refresh_token);
@@ -80,50 +73,34 @@ export async function login(email, password) {
 }
 
 export async function signup(email, password) {
-  const res = await apiFetch("/signup", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  });
+  const res = await apiFetch("/signup", { method: "POST", body: JSON.stringify({ email, password }) });
   return await getJsonSafe(res);
 }
 
 export async function verifyEmail(email, code) {
-  const res = await apiFetch("/verify", {
-    method: "POST",
-    body: JSON.stringify({ email, code }),
-  });
+  const res = await apiFetch("/verify", { method: "POST", body: JSON.stringify({ email, code }) });
   return await getJsonSafe(res);
 }
 
-// --- user session ---
+// --- user ---
 export async function fetchMe() {
   const res = await apiFetch("/me");
-  if (!res) return null;
-
   const data = await getJsonSafe(res);
-  if (!res.ok || !data || data.error) return null;
+  if (!res?.ok || data?.error) return null;
   return data;
-}
-
-export function logout() {
-  silentLogout();
 }
 
 // --- chat ---
 export async function sendMessage(message, bot_name, user_name) {
-  const user_id = localStorage.getItem("userEmail"); // using email as ID
-  if (!user_id) {
-    console.error("No user_id in localStorage");
-    return null;
-  }
+  const user_id = localStorage.getItem("userEmail");
+  if (!user_id) return null;
 
-  const res = await apiFetch("/chat", {
-    method: "POST",
-    body: JSON.stringify({ message, bot_name, user_name, user_id }),
-  });
-  if (!res) return null;
-
+  const res = await apiFetch("/chat", { method: "POST", body: JSON.stringify({ message, bot_name, user_name, user_id }) });
   const data = await getJsonSafe(res);
-  if (!res.ok || !data || data.error) return null;
+  if (!res?.ok || data?.error) return null;
   return data;
+}
+
+export async function logout() {
+  silentLogout();
 }
