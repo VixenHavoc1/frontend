@@ -171,12 +171,13 @@ const sendMessage = async () => {
   }
 
   if (!userId) {
-  console.error("User ID missing!");
-  return;
-}
+    console.error("User ID missing!");
+    return;
+  }
 
-
-  if (!hasPaid && messageCount >= 5) {
+  // --- Check free messages + paid status ---
+  const freeMessagesLeft = 5 - messageCount; // sync with fetchUserData
+  if (!hasPaid && freeMessagesLeft <= 0) {
     setShowPaywall(true);
     return;
   }
@@ -218,18 +219,18 @@ const sendMessage = async () => {
     };
 
     setMessages((prev) => [...prev, botMessage]);
+
+    // --- Update free messages left ---
     const newCount = messageCount + 1;
     setMessageCount(newCount);
     localStorage.setItem("message_count", newCount.toString());
+
   } catch (err) {
     console.error("Message error:", err);
   } finally {
     setIsTyping(false);
   }
 };
-
-
-
 
 const handleKeyDown = (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
@@ -356,6 +357,7 @@ const handleVerifySubmit = async (e) => {
     setError(err.message || "Something went wrong. Please try again.");
   }
 };
+  
 const fetchUserEmail = async () => {
   try {
     const headers = await getAuthHeaders();
@@ -387,6 +389,56 @@ const fetchUserEmail = async () => {
     silentLogout();
   }
 };
+// ---- Fetch /me and sync frontend state + localStorage ----
+const fetchUserData = async () => {
+  try {
+    const headers = await getAuthHeaders();
+    if (!headers.Authorization) return; // skip if no token
+
+    const res = await apiFetch("/me", { method: "GET", headers });
+    const data = await res.json();
+
+    if (res.ok && data?.id) {
+      // --- Sync state & localStorage ---
+      setUserId(data.id);
+      localStorage.setItem("userId", data.id);
+
+      setUserEmail(data.email);
+      localStorage.setItem("userEmail", data.email);
+
+      const displayName = data.display_name && data.display_name !== "Unknown"
+        ? data.display_name
+        : "";
+      setUserName(displayName);
+      localStorage.setItem("userName", displayName);
+
+      setHasPaid(data.has_paid);
+      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
+
+      // Sync free messages left (default to 5 if not set)
+      const freeMessages = data.free_messages_left ?? 5;
+      setMessageCount(5 - freeMessages);
+      localStorage.setItem("message_count", (5 - freeMessages).toString());
+
+      // Show name modal if display_name is empty
+      if (!displayName) setShowNameModal(true);
+
+    } else {
+      console.warn("fetchUserData failed", res.status, data);
+      silentLogout();
+    }
+  } catch (err) {
+    console.error("fetchUserData error:", err);
+    silentLogout();
+  }
+};
+
+// ---- useEffect to fetch after login/signup ----
+useEffect(() => {
+  if (isAuthenticated) {
+    fetchUserData();
+  }
+}, [isAuthenticated]);
 
   
   return (
