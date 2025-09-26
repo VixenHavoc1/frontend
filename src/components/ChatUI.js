@@ -276,13 +276,13 @@ const handleKeyDown = (e) => {
 const handleVerifySubmit = async (e) => {
   e.preventDefault();
   try {
-    await verifyEmail(email, verifyCode); // verify first
-    await login(email, password);         // login now
+   await verifyEmail(email, verifyCode);
+const loginData = await login(email, password);  // token saved here
+setIsAuthenticated(true);
+setShowVerify(false);
 
-    setIsAuthenticated(true);
-    setShowVerify(false);
+await fetchUserEmail(); // now /me works
 
-    await fetchUserEmail(); // sets userEmail and userId safely
   } catch (err) {
     console.error("Verification error:", err);
     setError(err.message || "Verification error. Try again.");
