@@ -187,6 +187,12 @@ const sendMessage = async () => {
     return;
   }
 
+  const user_id = localStorage.getItem("userId"); // only use after login
+  if (!user_id) {
+    console.error("User ID missing!");
+    return;
+  }
+
   if (!hasPaid && messageCount >= 5) {
     setShowPaywall(true);
     return;
@@ -200,7 +206,6 @@ const sendMessage = async () => {
   setIsTyping(true);
 
   try {
-    const user_id = localStorage.getItem("userId"); // always use saved DB id
     const user_name = localStorage.getItem("userName") || "";
 
     const data = await apiFetch("/chat", {
@@ -214,15 +219,9 @@ const sendMessage = async () => {
     });
 
     if (!data || data.error) {
-      if (data?.code === 403) {
-        console.log("🚫 403 Forbidden — triggering paywall");
-        setShowPaywall(true);
-      } else if (data?.code === 401) {
-        console.log("🚫 401 Unauthorized — token may be invalid");
-        silentLogout();
-      } else {
-        throw new Error(data?.error || "Failed to send message");
-      }
+      if (data?.code === 403) setShowPaywall(true);
+      else if (data?.code === 401) silentLogout();
+      else throw new Error(data?.error || "Failed to send message");
       return;
     }
 
@@ -234,7 +233,6 @@ const sendMessage = async () => {
     };
 
     setMessages((prev) => [...prev, botMessage]);
-
     const newCount = messageCount + 1;
     setMessageCount(newCount);
     localStorage.setItem("message_count", newCount.toString());
@@ -273,9 +271,14 @@ const handleKeyDown = (e) => {
   e.preventDefault();
   setError("");
   try {
-  await signup(email, password);
-   setShowSignup(false);
-   setShowVerify(true);
+    // Signup never uses userId
+    await apiFetch("/signup", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+
+    setShowSignup(false);
+    setShowVerify(true);
   } catch (err) {
     console.error("Signup error:", err);
     setError(err.message || "Something went wrong. Please try again.");
@@ -283,19 +286,23 @@ const handleKeyDown = (e) => {
 };
 
 
+
 const handleVerifySubmit = async (e) => {
   e.preventDefault();
   try {
-  await verifyEmail(email, verifyCode);   // just verifies
-    await login(email, password);           // saves access + refresh tokens
+    await verifyEmail(email, verifyCode); // verify first
+    await login(email, password);         // login now
+
     setIsAuthenticated(true);
     setShowVerify(false);
-    await fetchUserEmail();
-  } catch (err){
+
+    await fetchUserEmail(); // sets userEmail and userId safely
+  } catch (err) {
     console.error("Verification error:", err);
     setError(err.message || "Verification error. Try again.");
   }
 };
+
 
   
 
