@@ -100,49 +100,74 @@ const handleBotSelect = (bot) => {
       return null;
     }
   };
-
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("access_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+const silentLogout = () => {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("userName");
+  localStorage.removeItem("userId");
+  setIsAuthenticated(false);
+  setUserEmail(null);
+  setUserName("");
 };
-const authHeaders = { Authorization: `Bearer ${localStorage.getItem("access_token")}` };
 
-const data = await apiFetch("/chat", {
-  method: "POST",
-  headers: { "Content-Type": "application/json", ...authHeaders },
-  body: JSON.stringify({ message: input, bot_name: bot.name, user_id, user_name }),
-});
-  
-async function fetchUserEmail() {
-  const token = localStorage.getItem("access_token");
-  if (!token) {
-    console.warn("No token found");
-    return;
-  }
+// ---- Helper: getAuthHeaders ----
+const getAuthHeaders = async () => {
+  let token = localStorage.getItem("access_token");
+  const refresh = localStorage.getItem("refresh_token");
 
-  const { ok, data } = await apiFetch("/me", {
-    method: "GET",
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  if (!token && refresh) {
+    try {
+      const res = await apiFetch("/refresh-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refresh }),
+      });
 
-  if (ok && data.email) {
-    setUserEmail(data.email);
-    setUserName(data.display_name || "");
-    setHasPaid(data.has_paid);
-    localStorage.setItem("userEmail", data.email);
-    localStorage.setItem("userName", data.display_name || "");
-    localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
-  } else {
-    console.error("fetchUserEmail failed:", data.detail);
-    if (data.detail === "Invalid or expired token") {
-      // clear tokens and force login
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      setIsAuthenticated(false);
-      setShowLogin(true);
+      if (res.ok && res.data.access_token) {
+        token = res.data.access_token;
+        localStorage.setItem("access_token", token);
+      } else {
+        silentLogout();
+      }
+    } catch (err) {
+      console.error("Refresh token error:", err);
+      silentLogout();
     }
   }
-}
+
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+// ---- fetchUserEmail (with access + refresh token handling) ----
+const fetchUserEmail = async () => {
+  try {
+    const headers = await getAuthHeaders();
+    const { ok, status, data } = await apiFetch("/me", {
+      method: "GET",
+      headers,
+    });
+
+    if (ok && data && data.email) {
+      setUserEmail(data.email);
+      localStorage.setItem("userEmail", data.email);
+      if (data.display_name) {
+        setUserName(data.display_name);
+        localStorage.setItem("userName", data.display_name);
+      }
+      setHasPaid(data.has_paid);
+      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
+    } else {
+      console.warn("fetchUserEmail failed", status, data);
+      silentLogout();
+    }
+  } catch (err) {
+    console.error("fetchUserEmail error:", err);
+    silentLogout();
+  }
+};
+
+  
 
 
 useEffect(() => {
@@ -187,7 +212,7 @@ const sendMessage = async () => {
     return;
   }
 
-  const user_id = localStorage.getItem("userId"); // only use after login
+  const user_id = localStorage.getItem("userId");
   if (!user_id) {
     console.error("User ID missing!");
     return;
@@ -207,9 +232,11 @@ const sendMessage = async () => {
 
   try {
     const user_name = localStorage.getItem("userName") || "";
+    const headers = await getAuthHeaders();
 
     const data = await apiFetch("/chat", {
       method: "POST",
+      headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify({
         message: input,
         bot_name: bot?.name || "Default",
@@ -242,6 +269,7 @@ const sendMessage = async () => {
     setIsTyping(false);
   }
 };
+
 
 
 
