@@ -107,12 +107,19 @@ const getAuthHeaders = () => {
 };
 
 async function fetchUserEmail() {
-  const { ok, status, data } = await apiFetch("/me", { method: "GET" });
+  const token = localStorage.getItem("access_token");
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+  const { ok, status, data } = await apiFetch("/me", {
+    method: "GET",
+    headers,
+  });
+
   if (ok && !data.error && data.email) {
     setUserEmail(data.email);
     localStorage.setItem("userEmail", data.email);
     if (data.display_name) {
-      setDisplayName(data.display_name);
+      setUserName(data.display_name);
       localStorage.setItem("userName", data.display_name);
     }
     setHasPaid(data.has_paid);
@@ -123,7 +130,7 @@ async function fetchUserEmail() {
     localStorage.removeItem("userEmail");
   }
 }
-  
+
 useEffect(() => {
   const storedName = localStorage.getItem("userName");
   const nameSet = localStorage.getItem("nameSet");
