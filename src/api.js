@@ -39,14 +39,15 @@ async function tryRefreshToken() {
 // --- universal fetch with auto-refresh ---
 export async function apiFetch(endpoint, options = {}, retry = true) {
   try {
-    let token = localStorage.getItem("access_token");
-
+    const token = localStorage.getItem("access_token");
     const headers = {
       "Content-Type": "application/json",
       ...(options.headers || {}),
     };
-
-    if (token) headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+      console.log("Sending token:", token);  // 🔹 debug
+    }
 
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
@@ -55,23 +56,18 @@ export async function apiFetch(endpoint, options = {}, retry = true) {
 
     if (res.status === 401 && retry) {
       const refreshed = await tryRefreshToken();
-      if (refreshed) {
-        return apiFetch(endpoint, options, false); // retry once
-      }
+      if (refreshed) return apiFetch(endpoint, options, false);
       silentLogout();
       return null;
     }
 
-    try {
-      return await res.json();
-    } catch {
-      return null;
-    }
+    return await res.json();
   } catch (err) {
     console.error("apiFetch network error:", err);
     return null;
   }
 }
+
 
 // --- auth / account ---
 export async function signup(email, password) {
