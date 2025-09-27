@@ -146,23 +146,26 @@ const handleNameConfirm = async () => {
   if (!userName.trim()) return;
 
   try {
-    // 🔥 send to backend
+    const headers = await getAuthHeaders();
+    if (!headers.Authorization) {
+      console.error("No auth token — cannot update display name");
+      return;
+    }
+
     await apiFetch("/me/display-name", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...await getAuthHeaders(),
-      },
+      headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify({ display_name: userName.trim() }),
     });
 
-    // also update localStorage so it stays in sync
+    // Save locally
     localStorage.setItem("userName", userName.trim());
     localStorage.setItem("nameSet", "true");
 
     setShowNameModal(false);
   } catch (err) {
     console.error("Failed to update display name:", err);
+    setError("Failed to update display name. Try again.");
   }
 };
 
@@ -210,31 +213,34 @@ const handleKeyDown = (e) => {
   }
 };
 
-
-
 const handleVerifySubmit = async (e) => {
   e.preventDefault();
+  setError("");
+
   try {
+    // 1. Verify the email with code
     await verifyEmail(email, verifyCode);
-    const loginData = await login(email, password);  // token saved here
+
+    // 2. Auto-login immediately after verification
+    const loginData = await login(email, password); // saves access + refresh tokens in localStorage
+    if (!loginData.access_token) throw new Error("Login failed");
+
     setIsAuthenticated(true);
     setShowVerify(false);
 
-    await fetchUserEmail(); // populates userName, userId, etc.
+    // 3. Fetch user info after login
+    await fetchUserData(); // sets userId, userName, userEmail, hasPaid, messageCount
 
-    // Show name modal if new user or display_name is unknown
-    const storedName = localStorage.getItem("userName");
-    if (!storedName || storedName === "Unknown") {
-      setShowNameModal(true);
-    }
+    // 4. Show name modal only if display_name is empty
+    const displayName = localStorage.getItem("userName") || "";
+    if (!displayName) setShowNameModal(true);
 
   } catch (err) {
-    console.error("Verification error:", err);
-    setError(err.message || "Verification error. Try again.");
+    console.error("Verification/Login error:", err);
+    setError(err.message || "Verification or login failed. Try again.");
   }
 };
 
-  
 
   const closePaywallModal = () => setShowPaywall(false);
   const unlockAccess = () => {
