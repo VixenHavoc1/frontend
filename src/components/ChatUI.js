@@ -12,7 +12,7 @@ export default function ChatUI({ bot }) {
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
-  
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
@@ -145,27 +145,37 @@ useEffect(() => {
 const handleNameConfirm = async () => {
   if (!userName.trim()) return;
 
+  setIsUpdatingName(true);
   try {
     const headers = await getAuthHeaders();
     if (!headers.Authorization) {
       console.error("No auth token — cannot update display name");
+      alert("Please log in first.");
+      setShowLogin(true);
+      setIsUpdatingName(false);
       return;
     }
 
-    await apiFetch("/me/display-name", {
+    const data = await apiFetch("/me/display-name", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify({ display_name: userName.trim() }),
     });
 
-    // Save locally
-    localStorage.setItem("userName", userName.trim());
-    localStorage.setItem("nameSet", "true");
-
-    setShowNameModal(false);
+    if (data && !data.error) {
+      // Save locally
+      localStorage.setItem("userName", userName.trim());
+      localStorage.setItem("nameSet", "true");
+      setShowNameModal(false);
+    } else {
+      console.error("Failed to update display name:", data?.error);
+      setError("Failed to update name. Try again.");
+    }
   } catch (err) {
-    console.error("Failed to update display name:", err);
-    setError("Failed to update display name. Try again.");
+    console.error("Error updating name:", err);
+    setError("Something went wrong. Try again.");
+  } finally {
+    setIsUpdatingName(false);
   }
 };
 
