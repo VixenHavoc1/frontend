@@ -110,20 +110,6 @@ export async function fetchMe() {
   return data;
 }
 
-// --- user display name ---
-export async function updateDisplayName(newName) {
-  const data = await apiFetch("/me/display-name", {
-    method: "POST",
-    body: JSON.stringify({ display_name: newName }),
-  });
-
-  if (data && !data.error) {
-    localStorage.setItem("userName", newName);
-  }
-
-  return data;
-}
-
 // --- chat ---
 export async function sendMessage(message, bot_name, user_name) {
   const user_id = localStorage.getItem("userId") || localStorage.getItem("userEmail");
@@ -140,4 +126,24 @@ export async function sendMessage(message, bot_name, user_name) {
 
 export async function logout() {
   silentLogout();
+}
+
+export async function updateDisplayName(newName) {
+  if (!localStorage.getItem("access_token")) {
+    console.warn("No access token: login first");
+    return null;
+  }
+
+  const data = await apiFetch("/me/display-name", {
+    method: "POST",
+    body: JSON.stringify({ display_name: newName }),
+  });
+
+  if (data && !data.error) {
+    localStorage.setItem("userName", newName);
+  } else if (data?.error?.code === 401) {
+    console.warn("Unauthorized: Access token missing or expired");
+  }
+
+  return data;
 }
