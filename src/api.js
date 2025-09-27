@@ -8,8 +8,7 @@ export function silentLogout() {
   localStorage.removeItem("userEmail");
   localStorage.removeItem("userName");
   localStorage.removeItem("userId");
-  // optional redirect; frontend can handle navigation if you prefer
-  window.location.href = "/login";
+  window.location.href = "/login"; // frontend can handle navigation
 }
 
 async function tryRefreshToken() {
@@ -38,7 +37,6 @@ async function tryRefreshToken() {
 }
 
 // --- universal fetch with auto-refresh ---
-// IMPORTANT: returns parsed JSON or null on failure.
 export async function apiFetch(endpoint, options = {}, retry = true) {
   try {
     let token = localStorage.getItem("access_token");
@@ -55,23 +53,18 @@ export async function apiFetch(endpoint, options = {}, retry = true) {
       headers,
     });
 
-    // handle auth expiry -> try refresh once
     if (res.status === 401 && retry) {
       const refreshed = await tryRefreshToken();
       if (refreshed) {
-        // retry once with refreshed token
-        return apiFetch(endpoint, options, false);
+        return apiFetch(endpoint, options, false); // retry once
       }
       silentLogout();
       return null;
     }
 
-    // parse JSON safely
     try {
-      const data = await res.json();
-      return data;
-    } catch (err) {
-      // no JSON body
+      return await res.json();
+    } catch {
       return null;
     }
   } catch (err) {
@@ -81,23 +74,32 @@ export async function apiFetch(endpoint, options = {}, retry = true) {
 }
 
 // --- auth / account ---
+export async function signup(email, password) {
+  return apiFetch("/signup", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function verifyEmail(email, code) {
+  return apiFetch("/verify", {
+    method: "POST",
+    body: JSON.stringify({ email, code }),
+  });
+}
+
 export async function login(email, password) {
-  const data = await apiFetch("/login", { method: "POST", body: JSON.stringify({ email, password }) });
+  const data = await apiFetch("/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
   if (!data || !data.access_token) return null;
 
   localStorage.setItem("access_token", data.access_token);
   if (data.refresh_token) localStorage.setItem("refresh_token", data.refresh_token);
   localStorage.setItem("userEmail", email);
-  return data;
-}
+  if (data.user_id) localStorage.setItem("userId", data.user_id);
 
-export async function signup(email, password) {
-  const data = await apiFetch("/signup", { method: "POST", body: JSON.stringify({ email, password }) });
-  return data;
-}
-
-export async function verifyEmail(email, code) {
-  const data = await apiFetch("/verify", { method: "POST", body: JSON.stringify({ email, code }) });
   return data;
 }
 
@@ -110,7 +112,6 @@ export async function fetchMe() {
 
 // --- chat ---
 export async function sendMessage(message, bot_name, user_name) {
-  // prefer stored userId, fallback to email
   const user_id = localStorage.getItem("userId") || localStorage.getItem("userEmail");
   if (!user_id) return null;
 
