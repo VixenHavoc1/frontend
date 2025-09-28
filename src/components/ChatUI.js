@@ -131,16 +131,6 @@ const getAuthHeaders = async () => {
 };
 
 
-useEffect(() => {
-  const storedName = localStorage.getItem("userName");
-  const nameSet = localStorage.getItem("nameSet");
-
-  if (storedName) {
-    setUserName(storedName);
-  } else if (!nameSet && isAuthenticated) { // only after login/signup
-    setShowNameModal(true);
-  }
-}, [isAuthenticated]);
 
 const handleNameConfirm = async () => {
   if (!userName.trim()) return;
@@ -400,24 +390,35 @@ const fetchUserData = async () => {
 };
 
 // ---- useEffect to fetch after login/signup ----
+// Ensure user data is fetched only once after authentication
 useEffect(() => {
-  if (isAuthenticated) {
-    fetchUserData();
-  }
+  const initUser = async () => {
+    if (isAuthenticated && !userId) {
+      await fetchUserData(); // sets userId, userName, userEmail, hasPaid
+    }
+  };
+  initUser();
 }, [isAuthenticated]);
 
 const sendMessage = async () => {
-  // 1️⃣ Ensure user is logged in
+  // 1️⃣ Check authentication
   if (!isAuthenticated) {
     setShowSignup(true);
     return;
   }
 
+  // 2️⃣ Wait for userId to be set
   if (!userId) {
-    console.error("User ID missing!");
-    return;
+    console.warn("User ID not ready. Fetching user data...");
+    await fetchUserData();
+    if (!userId) {
+      console.error("User ID still missing. Cannot send message.");
+      alert("Please log in again.");
+      return;
+    }
   }
 
+  // 3️⃣ Enforce paywall
   if (!hasPaid && messageCount >= 5) {
     setShowPaywall(true);
     return;
@@ -425,29 +426,26 @@ const sendMessage = async () => {
 
   if (!input.trim()) return;
 
-  // 2️⃣ Get fresh auth headers BEFORE doing anything
-  const headers = { "Content-Type": "application/json", ...await getAuthHeaders() };
-  if (!headers.Authorization) {
-    console.warn("Access token missing. Logging out...");
-    silentLogout();
-    setShowLogin(true);
-    return;
-  }
-
-  // 3️⃣ Prepare and send the message
+  setIsTyping(true);
   const userMessage = { sender: "user", text: input };
   setMessages((prev) => [...prev, userMessage]);
   const msgContent = input;
   setInput("");
-  setIsTyping(true);
 
   try {
-    const user_name = localStorage.getItem("userName") || "";
+    const headers = { "Content-Type": "application/json", ...await getAuthHeaders() };
+    if (!headers.Authorization) {
+      console.warn("Access token missing. Logging out...");
+      silentLogout();
+      setShowLogin(true);
+      return;
+    }
+
     const body = {
       message: msgContent,
       bot_name: bot?.name || "Default",
       user_id: userId,
-      user_name,
+      user_name: userName || localStorage.getItem("userName") || "Unknown",
     };
 
     const data = await apiFetch("/chat", {
@@ -466,7 +464,7 @@ const sendMessage = async () => {
     };
     setMessages((prev) => [...prev, botMessage]);
 
-    // 4️⃣ Update free messages & paid status
+    // Update message count
     const newCount = data.free_messages_left !== undefined
       ? 5 - data.free_messages_left
       : messageCount + 1;
@@ -474,6 +472,7 @@ const sendMessage = async () => {
     localStorage.setItem("message_count", newCount.toString());
     if (!hasPaid && newCount >= 5) setShowPaywall(true);
 
+    // Update paid status
     if (data.has_paid !== undefined) {
       setHasPaid(data.has_paid);
       localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
@@ -487,6 +486,7 @@ const sendMessage = async () => {
     setIsTyping(false);
   }
 };
+
 
   return (
     <div className="flex flex-col h-screen bg-[#2C1F3D] text-white">
