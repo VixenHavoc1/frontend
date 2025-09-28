@@ -440,7 +440,7 @@ const sendMessage = async () => {
     const body = {
       message: msgContent,
       bot_name: bot?.name || "Default",
-      user_id: userId,
+      id: userId,
       user_name,
     };
 
