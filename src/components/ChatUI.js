@@ -406,11 +406,10 @@ const sendMessage = async () => {
     return;
   }
 
-
-  // 2️⃣ Wait for userId to be set
+  // Wait for userId and userName to be ready
   if (!userId || !userName) {
     console.warn("User not ready. Fetching user data...");
-    await fetchUserData(); // sets userId, userName, hasPaid
+    await fetchUserData();
     if (!userId || !userName) {
       console.error("User data missing. Cannot send message.");
       alert("Please log in again.");
@@ -418,7 +417,7 @@ const sendMessage = async () => {
     }
   }
 
-  // 3️⃣ Enforce paywall
+  // Enforce paywall
   if (!hasPaid && messageCount >= 5) {
     setShowPaywall(true);
     return;
@@ -431,8 +430,8 @@ const sendMessage = async () => {
   setMessages((prev) => [...prev, userMessage]);
   const msgContent = input;
   setInput("");
-  
- try {
+
+  try {
     const headers = { "Content-Type": "application/json", ...await getAuthHeaders() };
     if (!headers.Authorization) {
       console.warn("Access token missing. Logging out...");
@@ -441,24 +440,34 @@ const sendMessage = async () => {
       return;
     }
 
-     const body = {
+    const body = {
       message: msgContent,
       bot_name: bot?.name || "Default",
       user_id: userId,
       user_name: userName,
     };
-   
+
     const data = await apiFetch("/chat", {
       method: "POST",
       headers,
       body: JSON.stringify(body),
     });
 
-    if (!data) throw new Error("No response from server");
+    // --- Handle auth errors explicitly ---
+    if (data?.error?.code === 401) {
+      console.warn("User not found or session expired.");
+      silentLogout();
+      setShowLogin(true);
+      alert("Session expired. Please log in again.");
+      setIsTyping(false);
+      return;
+    }
+
+    if (!data?.response) throw new Error("No response from server");
 
     const botMessage = {
       sender: "bot",
-      text: data.response || "Sorry, no reply received.",
+      text: data.response,
       audio: data.audio || null,
       image: data.image || null,
     };
@@ -480,12 +489,16 @@ const sendMessage = async () => {
 
   } catch (err) {
     console.error("Message error:", err);
-    const fallbackBotMessage = { sender: "bot", text: "Sorry, no reply received." };
-    setMessages((prev) => [...prev, fallbackBotMessage]);
+    // Only show fallback if it's not an auth issue
+    if (!err.message.includes("No response from server")) {
+      const fallbackBotMessage = { sender: "bot", text: "Sorry, no reply received." };
+      setMessages((prev) => [...prev, fallbackBotMessage]);
+    }
   } finally {
     setIsTyping(false);
   }
 };
+
 
 
   return (
