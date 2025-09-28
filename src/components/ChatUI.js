@@ -93,47 +93,52 @@ const handleBotSelect = (bot) => {
 
 
 const silentLogout = () => {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-  localStorage.removeItem("userEmail");
-  localStorage.removeItem("userName");
-  localStorage.removeItem("userId");
-  setIsAuthenticated(false);
-  setUserEmail(null);
-  setUserName("");
-};
-
+    console.log("LOGOUT: Clearing user session data."); // 🐛 Debug log
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userId");
+    setIsAuthenticated(false);
+    setUserEmail(null);
+    setUserName("");
+    setUserId(null); // Explicitly reset userId
+  };
 // ---- Helper: getAuthHeaders ----
 const getAuthHeaders = async () => {
-  let token = localStorage.getItem("access_token");
-  const refresh = localStorage.getItem("refresh_token");
+    let token = localStorage.getItem("access_token");
+    const refresh = localStorage.getItem("refresh_token");
 
-  if (!token && refresh) {
-    try {
-      const res = await fetch(`${CHAT_BACKEND_URL}/refresh`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: refresh }),
-      });
+    console.log("AUTH: Checking for access token..."); // 🐛 Debug log
+    if (!token && refresh) {
+      console.log("AUTH: Access token missing, trying to refresh..."); // 🐛 Debug log
+      try {
+        const res = await fetch(`${CHAT_BACKEND_URL}/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh_token: refresh }),
+        });
+        const data = await res.json();
+        if (res.ok && data.access_token) {
+          token = data.access_token;
+          localStorage.setItem("access_token", token);
+          console.log("AUTH: Token refreshed successfully."); // 🐛 Debug log
+        } else {
+          console.error("AUTH: Refresh failed, response was not ok.", data); // 🐛 Debug log
+          silentLogout();
+          return {};
+        }
+      } catch (err) {
+        console.error("AUTH: Refresh token network error:", err); // 🐛 Debug log
+        silentLogout();
+        return {};
+      }
+    }
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    console.log("AUTH: Final headers being returned:", headers); // 🐛 Debug log
+    return headers;
+  };
 
-      const data = await res.json();
-      if (res.ok && data.access_token) {
-        token = data.access_token;
-        localStorage.setItem("access_token", token);
-      } else {
-        // Refresh failed — logout
-        silentLogout();
-        return {};
-      }
-    } catch (err) {
-      console.error("Refresh token error:", err);
-      silentLogout();
-      return {};
-    }
-  }
-
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
 
 
 
@@ -294,48 +299,57 @@ const handleVerifySubmit = async (e) => {
 // ---- Fetch user email and sync minimal info ----
 // Replace your old fetchUserData and fetchUserEmail with this single function
 const syncUserData = async () => {
-  try {
-    const headers = await getAuthHeaders();
-    if (!headers.Authorization) return null;
+    console.log("SYNC: Attempting to sync user data from backend..."); // 🐛 Debug log
+    try {
+      const headers = await getAuthHeaders();
+      if (!headers.Authorization) {
+        console.log("SYNC: No authorization token, cannot sync."); // 🐛 Debug log
+        return null;
+      }
+      const data = await apiFetch("/me", { method: "GET", headers });
+      if (data && data.id) {
+        console.log("SYNC: User data fetched successfully.", data); // 🐛 Debug log
+        setUserId(data.id);
+        setUserEmail(data.email);
+        setUserName(data.display_name || "");
+        setHasPaid(data.has_paid);
+        localStorage.setItem("userId", data.id);
+        localStorage.setItem("userEmail", data.email);
+        localStorage.setItem("userName", data.display_name || "");
+        localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
+        return data;
+      } else {
+        console.error("SYNC: User data fetch failed or returned no ID.", data); // 🐛 Debug log
+        silentLogout();
+        return null;
+      }
+    } catch (err) {
+      console.error("SYNC: User data sync error:", err); // 🐛 Debug log
+      silentLogout();
+      return null;
+    }
+  };
 
-    const data = await apiFetch("/me", { method: "GET", headers });
-
-    if (data && data.id) {
-      // 1. Sync React State
-      setUserId(data.id);
-      setUserEmail(data.email);
-      setUserName(data.display_name || "");
-      setHasPaid(data.has_paid);
-
-      // 2. Sync localStorage
-      localStorage.setItem("userId", data.id);
-      localStorage.setItem("userEmail", data.email);
-      localStorage.setItem("userName", data.display_name || "");
-      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
-      
-      return data; // 3. Return fresh data
-    } else {
-      silentLogout();
-      return null;
-    }
-  } catch (err) {
-    console.error("User data sync error:", err);
-    silentLogout();
-    return null;
-  }
-};
-
-// Initial load useEffect
-useEffect(() => {
-  const initializeUserSession = async () => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      setIsAuthenticated(true);
-      await syncUserData(); // Use the new function
-    }
-  };
-  initializeUserSession();
-}, []);
+  // Initial load effect
+  useEffect(() => {
+    const initializeUserSession = async () => {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        console.log("INIT: Found existing access token. Authenticating."); // 🐛 Debug log
+        setIsAuthenticated(true);
+        await syncUserData();
+      } else {
+        console.log("INIT: No access token found. User is not authenticated."); // 🐛 Debug log
+      }
+    };
+    initializeUserSession();
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    inputRef.current?.focus();
+    const savedCount = localStorage.getItem("message_count");
+    if (savedCount) {
+      setMessageCount(parseInt(savedCount, 10));
+    }
+  }, []);
 
 // Login handler
 const handleLoginSubmit = async (e) => {
@@ -361,79 +375,71 @@ const handleLoginSubmit = async (e) => {
   // Empty dependency array means it runs only once on mount
 // In ChatUI.js
 const sendMessage = async () => {
-    if (!isAuthenticated || !userId) {
-      setShowLogin(true);
-      return;
-    }
+    console.log("SEND: Message initiated."); // 🐛 Debug log
+    if (!isAuthenticated || !userId) {
+      console.warn("SEND: User not authenticated or userId is null. Showing login modal."); // 🐛 Debug log
+      setShowLogin(true);
+      return;
+    }
+    if (!input.trim()) {
+      console.warn("SEND: Input is empty. Aborting."); // 🐛 Debug log
+      return;
+    }
 
-  let currentUser = { id: userId, name: userName };
+    const currentUserId = userId;
+    const currentUserName = userName || "baby";
 
-  // If user data is missing, fetch it and use the fresh data
-  if (!currentUser.id || !currentUser.name) {
-    console.warn("User data is incomplete. Re-fetching...");
-    const freshUserData = await fetchUserData();
-    if (freshUserData?.id && freshUserData?.display_name) {
-      currentUser = { id: freshUserData.id, name: freshUserData.display_name };
-    } else {
-      console.error("Failed to get user data. Please log in again.");
-      alert("Your session may have expired. Please log in again.");
-      silentLogout();
-      setShowLogin(true);
-      return;
-    }
-  }
+    if (!hasPaid && messageCount >= 5) {
+      console.log("SEND: Free message limit reached. Showing paywall."); // 🐛 Debug log
+      setShowPaywall(true);
+      return;
+    }
 
-  // Enforce paywall
-  if (!hasPaid && messageCount >= 5) {
-    setShowPaywall(true);
-    return;
-  }
+    setIsTyping(true);
+    const userMessage = { sender: "user", text: input };
+    setMessages((prev) => [...prev, userMessage]);
+    const msgContent = input;
+    setInput("");
 
-  if (!input.trim()) return;
+    try {
+      const headers = await getAuthHeaders();
+      if (!headers.Authorization) {
+        console.error("SEND: No Authorization header returned. Session expired?"); // 🐛 Debug log
+        throw new Error("Authorization failed. Please log in again.");
+      }
 
-  setIsTyping(true);
-  const userMessage = { sender: "user", text: input };
-  setMessages((prev) => [...prev, userMessage]);
-  const msgContent = input;
-  setInput("");
+      const body = {
+        message: msgContent,
+        bot_name: bot?.name || "Default",
+        user_id: currentUserId,
+        user_name: currentUserName,
+      };
+      console.log("SEND: Sending message to API with body:", body); // 🐛 Debug log
+      
+      const data = await apiFetch("/chat", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
 
-  try {
-    const headers = { "Content-Type": "application/json", ...(await getAuthHeaders()) };
-    if (!headers.Authorization) {
-      // This case should be caught by the fetchUserData call above, but it's good for safety
-      throw new Error("Authorization token missing.");
-    }
-    
-    // ✅ Use the reliable, fresh user data
-   const body = {
-      message: msgContent,
-      bot_name: bot?.name || "Default",
-      user_id: userId,
-      user_name: userName || "baby", // Provide a fallback
-    };
-    
-    const data = await apiFetch("/chat", {
-      method: "POST",
-      headers,
-      body: JSON.stringify(body),
-    });
+      console.log("SEND: Received response from API:", data); // 🐛 Debug log
 
-    // ... (rest of your sendMessage logic for handling the response) ...
-    // --- Handle auth errors explicitly ---
-    if (data?.error?.code === 401) {
-      throw new Error("Authorization failed. Please log in again.");
-    }
-    // ... rest of the function
+      if (data?.error?.code === 401) {
+        console.error("SEND: Received 401 Unauthorized from server. Token expired."); // 🐛 Debug log
+        throw new Error("Authorization failed. Please log in again.");
+      }
 
-  } catch (err) {
-    console.error("Message error:", err);
-    alert(err.message || "Failed to send message. Your session may have expired.");
-    silentLogout();
-    setShowLogin(true);
-  } finally {
-    setIsTyping(false);
-  }
-};
+      // ... (rest of your sendMessage logic for handling the response) ...
+    } catch (err) {
+      console.error("SEND: Message sending failed:", err); // 🐛 Debug log
+      alert(err.message || "Failed to send message. Your session may have expired.");
+      silentLogout();
+      setShowLogin(true);
+    } finally {
+      setIsTyping(false);
+      console.log("SEND: Message process finished."); // 🐛 Debug log
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-[#2C1F3D] text-white">
