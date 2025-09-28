@@ -407,6 +407,7 @@ useEffect(() => {
 }, [isAuthenticated]);
 
 const sendMessage = async () => {
+  // 1️⃣ Ensure user is logged in
   if (!isAuthenticated) {
     setShowSignup(true);
     return;
@@ -424,6 +425,16 @@ const sendMessage = async () => {
 
   if (!input.trim()) return;
 
+  // 2️⃣ Get fresh auth headers BEFORE doing anything
+  const headers = { "Content-Type": "application/json", ...await getAuthHeaders() };
+  if (!headers.Authorization) {
+    console.warn("Access token missing. Logging out...");
+    silentLogout();
+    setShowLogin(true);
+    return;
+  }
+
+  // 3️⃣ Prepare and send the message
   const userMessage = { sender: "user", text: input };
   setMessages((prev) => [...prev, userMessage]);
   const msgContent = input;
@@ -431,11 +442,6 @@ const sendMessage = async () => {
   setIsTyping(true);
 
   try {
-    const headers = { "Content-Type": "application/json", ...await getAuthHeaders() };
-    if (!headers.Authorization) {
-      throw new Error("Not authenticated");
-    }
-
     const user_name = localStorage.getItem("userName") || "";
     const body = {
       message: msgContent,
@@ -452,7 +458,6 @@ const sendMessage = async () => {
 
     if (!data) throw new Error("No response from server");
 
-    // Always read `data.response`
     const botMessage = {
       sender: "bot",
       text: data.response || "Sorry, no reply received.",
@@ -461,19 +466,14 @@ const sendMessage = async () => {
     };
     setMessages((prev) => [...prev, botMessage]);
 
-    // Update free messages left
-    if (data.free_messages_left !== undefined) {
-      const newCount = 5 - data.free_messages_left;
-      setMessageCount(newCount);
-      localStorage.setItem("message_count", newCount.toString());
-      if (!hasPaid && newCount >= 5) setShowPaywall(true);
-    } else {
-      const newCount = messageCount + 1;
-      setMessageCount(newCount);
-      localStorage.setItem("message_count", newCount.toString());
-    }
+    // 4️⃣ Update free messages & paid status
+    const newCount = data.free_messages_left !== undefined
+      ? 5 - data.free_messages_left
+      : messageCount + 1;
+    setMessageCount(newCount);
+    localStorage.setItem("message_count", newCount.toString());
+    if (!hasPaid && newCount >= 5) setShowPaywall(true);
 
-    // Sync hasPaid
     if (data.has_paid !== undefined) {
       setHasPaid(data.has_paid);
       localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
@@ -487,7 +487,7 @@ const sendMessage = async () => {
     setIsTyping(false);
   }
 };
-  
+
   return (
     <div className="flex flex-col h-screen bg-[#2C1F3D] text-white">
       <div className="bg-[#1F1B29] p-4 shadow-lg flex justify-between items-center">
