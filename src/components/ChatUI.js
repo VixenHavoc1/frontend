@@ -87,6 +87,8 @@ const handleBotSelect = (bot) => {
       return null;
     }
   };
+
+
 const silentLogout = () => {
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
@@ -345,10 +347,11 @@ const fetchUserEmail = async () => {
 };
 
 // ---- Fetch /me and sync full frontend state + localStorage ----
+// In ChatUI.js
 const fetchUserData = async () => {
   try {
     const headers = await getAuthHeaders();
-    if (!headers.Authorization) return; // skip if no token
+    if (!headers.Authorization) return null; // Return null if not logged in
 
     const data = await apiFetch("/me", { method: "GET", headers });
 
@@ -356,63 +359,55 @@ const fetchUserData = async () => {
       // --- Sync state & localStorage ---
       setUserId(data.id);
       localStorage.setItem("userId", data.id);
-
-      setUserEmail(data.email);
-      localStorage.setItem("userEmail", data.email);
-
-      const displayName = data.display_name && data.display_name !== "Unknown"
-        ? data.display_name
-        : "";
-      setUserName(displayName);
-      localStorage.setItem("userName", displayName);
+      // ... (rest of your setters and localStorage calls)
 
       setHasPaid(data.has_paid);
       localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
 
-      // Sync free messages left (default to 5 if not set)
-      const freeMessages = data.free_messages_left ?? 5;
-      const usedMessages = 5 - freeMessages;
-      setMessageCount(usedMessages);
-      localStorage.setItem("message_count", usedMessages.toString());
-
-      // Show name modal if display_name is empty
-      if (!displayName) setShowNameModal(true);
-
+      return data; // ✅ RETURN THE FRESH DATA
     } else {
       console.warn("fetchUserData failed", data);
       silentLogout();
+      return null; // Return null on failure
     }
-
   } catch (err) {
     console.error("fetchUserData error:", err);
     silentLogout();
+    return null; // Return null on error
   }
 };
-
-// ---- useEffect to fetch after login/signup ----
-// Ensure user data is fetched only once after authentication
+// Add this useEffect to your ChatUI component
 useEffect(() => {
-  const initUser = async () => {
-    if (isAuthenticated && !userId) {
-      await fetchUserData(); // sets userId, userName, userEmail, hasPaid
+  const initializeUserSession = async () => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      setIsAuthenticated(true);
+      await fetchUserData();
     }
   };
-  initUser();
-}, [isAuthenticated]);
-
+  initializeUserSession();
+}, []); 
+  // Empty dependency array means it runs only once on mount
+// In ChatUI.js
 const sendMessage = async () => {
   if (!isAuthenticated) {
     setShowSignup(true);
     return;
   }
 
-  // Wait for userId and userName to be ready
-  if (!userId || !userName) {
-    console.warn("User not ready. Fetching user data...");
-    await fetchUserData();
-    if (!userId || !userName) {
-      console.error("User data missing. Cannot send message.");
-      alert("Please log in again.");
+  let currentUser = { id: userId, name: userName };
+
+  // If user data is missing, fetch it and use the fresh data
+  if (!currentUser.id || !currentUser.name) {
+    console.warn("User data is incomplete. Re-fetching...");
+    const freshUserData = await fetchUserData();
+    if (freshUserData?.id && freshUserData?.display_name) {
+      currentUser = { id: freshUserData.id, name: freshUserData.display_name };
+    } else {
+      console.error("Failed to get user data. Please log in again.");
+      alert("Your session may have expired. Please log in again.");
+      silentLogout();
+      setShowLogin(true);
       return;
     }
   }
@@ -432,19 +427,18 @@ const sendMessage = async () => {
   setInput("");
 
   try {
-    const headers = { "Content-Type": "application/json", ...await getAuthHeaders() };
+    const headers = { "Content-Type": "application/json", ...(await getAuthHeaders()) };
     if (!headers.Authorization) {
-      console.warn("Access token missing. Logging out...");
-      silentLogout();
-      setShowLogin(true);
-      return;
+      // This case should be caught by the fetchUserData call above, but it's good for safety
+      throw new Error("Authorization token missing.");
     }
-
+    
+    // ✅ Use the reliable, fresh user data
     const body = {
       message: msgContent,
       bot_name: bot?.name || "Default",
-      user_id: userId,
-      user_name: userName,
+      user_id: currentUser.id,
+      user_name: currentUser.name,
     };
 
     const data = await apiFetch("/chat", {
@@ -453,53 +447,22 @@ const sendMessage = async () => {
       body: JSON.stringify(body),
     });
 
+    // ... (rest of your sendMessage logic for handling the response) ...
     // --- Handle auth errors explicitly ---
     if (data?.error?.code === 401) {
-      console.warn("User not found or session expired.");
-      silentLogout();
-      setShowLogin(true);
-      alert("Session expired. Please log in again.");
-      setIsTyping(false);
-      return;
+      throw new Error("Authorization failed. Please log in again.");
     }
-
-    if (!data?.response) throw new Error("No response from server");
-
-    const botMessage = {
-      sender: "bot",
-      text: data.response,
-      audio: data.audio || null,
-      image: data.image || null,
-    };
-    setMessages((prev) => [...prev, botMessage]);
-
-    // Update message count
-    const newCount = data.free_messages_left !== undefined
-      ? 5 - data.free_messages_left
-      : messageCount + 1;
-    setMessageCount(newCount);
-    localStorage.setItem("message_count", newCount.toString());
-    if (!hasPaid && newCount >= 5) setShowPaywall(true);
-
-    // Update paid status
-    if (data.has_paid !== undefined) {
-      setHasPaid(data.has_paid);
-      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
-    }
+    // ... rest of the function
 
   } catch (err) {
     console.error("Message error:", err);
-    // Only show fallback if it's not an auth issue
-    if (!err.message.includes("No response from server")) {
-      const fallbackBotMessage = { sender: "bot", text: "Sorry, no reply received." };
-      setMessages((prev) => [...prev, fallbackBotMessage]);
-    }
+    alert(err.message || "Failed to send message. Your session may have expired.");
+    silentLogout();
+    setShowLogin(true);
   } finally {
     setIsTyping(false);
   }
 };
-
-
 
   return (
     <div className="flex flex-col h-screen bg-[#2C1F3D] text-white">
