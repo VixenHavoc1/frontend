@@ -401,18 +401,18 @@ useEffect(() => {
 }, [isAuthenticated]);
 
 const sendMessage = async () => {
-  // 1️⃣ Check authentication
   if (!isAuthenticated) {
     setShowSignup(true);
     return;
   }
 
+
   // 2️⃣ Wait for userId to be set
-  if (!userId) {
-    console.warn("User ID not ready. Fetching user data...");
-    await fetchUserData();
-    if (!userId) {
-      console.error("User ID still missing. Cannot send message.");
+  if (!userId || !userName) {
+    console.warn("User not ready. Fetching user data...");
+    await fetchUserData(); // sets userId, userName, hasPaid
+    if (!userId || !userName) {
+      console.error("User data missing. Cannot send message.");
       alert("Please log in again.");
       return;
     }
@@ -431,8 +431,8 @@ const sendMessage = async () => {
   setMessages((prev) => [...prev, userMessage]);
   const msgContent = input;
   setInput("");
-
-  try {
+  
+ try {
     const headers = { "Content-Type": "application/json", ...await getAuthHeaders() };
     if (!headers.Authorization) {
       console.warn("Access token missing. Logging out...");
@@ -441,13 +441,13 @@ const sendMessage = async () => {
       return;
     }
 
-    const body = {
+     const body = {
       message: msgContent,
       bot_name: bot?.name || "Default",
       user_id: userId,
-      user_name: userName || localStorage.getItem("userName") || "Unknown",
+      user_name: userName,
     };
-
+   
     const data = await apiFetch("/chat", {
       method: "POST",
       headers,
