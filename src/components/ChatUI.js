@@ -20,15 +20,14 @@ export default function ChatUI({ bot }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasPaid, setHasPaid] = useState(false);
+ 
   const [messageCount, setMessageCount] = useState(0);
-  const [userEmail, setUserEmail] = useState(null);
+
   const [showVerify, setShowVerify] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [verifyCode, setVerifyCode] = useState('');
   const [showNameModal, setShowNameModal] = useState(false);
-const [userName, setUserName] = useState("");
-const [userId, setUserId] = useState(localStorage.getItem("userId") || null);
+
 const CHAT_BACKEND_URL = "https://api.voxellaai.site";
 const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
 const [showPremiumUnlocked, setShowPremiumUnlocked] = useState(false);
@@ -36,7 +35,11 @@ const [showAgeModal, setShowAgeModal] = useState(
   !localStorage.getItem("age_verified")
 );
 const [selectedBot, setSelectedBot] = useState(null); // user picks bot first
-
+// At the top of your ChatUI component
+const [userName, setUserName] = useState(localStorage.getItem("userName") || "");
+const [userId, setUserId] = useState(localStorage.getItem("userId") || null);
+const [userEmail, setUserEmail] = useState(localStorage.getItem("userEmail") || null);
+const [hasPaid, setHasPaid] = useState(localStorage.getItem("hasPaid") === 'true');
  
   const getSession = async () => {
   const token = localStorage.getItem("access_token");
@@ -287,113 +290,81 @@ const handleVerifySubmit = async (e) => {
   }
 };
  
-  const handleLoginSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-
-  try {
-    // Perform login
-    const loginData = await login(email, password); // login saves tokens to localStorage
-    if (!loginData.access_token) throw new Error("Login failed");
-
-    setIsAuthenticated(true);
-    setShowLogin(false);
-
-    // Fetch user info immediately after login
-    await fetchUserData(); // sets userId, userName, userEmail, hasPaid
-
-    // Show name modal only if display_name is empty
-    const displayName = localStorage.getItem("userName") || "";
-    if (!displayName) setShowNameModal(true);
-
-  } catch (err) {
-    console.error("Login error:", err);
-    setError(err.message || "Something went wrong. Please try again.");
-  }
-};
-
-  
+ 
 // ---- Fetch user email and sync minimal info ----
-const fetchUserEmail = async () => {
+// Replace your old fetchUserData and fetchUserEmail with this single function
+const syncUserData = async () => {
   try {
     const headers = await getAuthHeaders();
-    if (!headers.Authorization) return; // skip if no token
-
-    const data = await apiFetch("/me", { method: "GET", headers });
-
-    if (data && data.email) {
-      setUserEmail(data.email);
-      localStorage.setItem("userEmail", data.email);
-
-      setUserId(data.id);
-      localStorage.setItem("userId", data.id);
-
-      if (data.display_name) {
-        setUserName(data.display_name);
-        localStorage.setItem("userName", data.display_name);
-      }
-
-      setHasPaid(data.has_paid);
-      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
-    } else {
-      console.warn("fetchUserEmail failed", data);
-      silentLogout();
-    }
-
-  } catch (err) {
-    console.error("fetchUserEmail error:", err);
-    silentLogout();
-  }
-};
-
-// ---- Fetch /me and sync full frontend state + localStorage ----
-// In ChatUI.js
-const fetchUserData = async () => {
-  try {
-    const headers = await getAuthHeaders();
-    if (!headers.Authorization) return null; // Return null if not logged in
+    if (!headers.Authorization) return null;
 
     const data = await apiFetch("/me", { method: "GET", headers });
 
     if (data && data.id) {
-      // --- Sync state & localStorage ---
+      // 1. Sync React State
       setUserId(data.id);
-      localStorage.setItem("userId", data.id);
-      // ... (rest of your setters and localStorage calls)
-
+      setUserEmail(data.email);
+      setUserName(data.display_name || "");
       setHasPaid(data.has_paid);
-      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
 
-      return data; // ✅ RETURN THE FRESH DATA
+      // 2. Sync localStorage
+      localStorage.setItem("userId", data.id);
+      localStorage.setItem("userEmail", data.email);
+      localStorage.setItem("userName", data.display_name || "");
+      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
+      
+      return data; // 3. Return fresh data
     } else {
-      console.warn("fetchUserData failed", data);
       silentLogout();
-      return null; // Return null on failure
+      return null;
     }
   } catch (err) {
-    console.error("fetchUserData error:", err);
+    console.error("User data sync error:", err);
     silentLogout();
-    return null; // Return null on error
+    return null;
   }
 };
-// Add this useEffect to your ChatUI component
+
+// Initial load useEffect
 useEffect(() => {
   const initializeUserSession = async () => {
     const token = localStorage.getItem("access_token");
     if (token) {
       setIsAuthenticated(true);
-      await fetchUserData();
+      await syncUserData(); // Use the new function
     }
   };
   initializeUserSession();
-}, []); 
+}, []);
+
+// Login handler
+const handleLoginSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+  try {
+    const loginData = await login(email, password);
+    if (!loginData.access_token) throw new Error("Login failed");
+
+    setIsAuthenticated(true);
+    setShowLogin(false);
+
+    const userData = await syncUserData(); // Use the new function
+
+    // The name modal logic now correctly uses the synced state
+    if (userData && !userData.display_name) {
+      setShowNameModal(true);
+    }
+  } catch (err) {
+    // ... error handling
+  }
+};
   // Empty dependency array means it runs only once on mount
 // In ChatUI.js
 const sendMessage = async () => {
-  if (!isAuthenticated) {
-    setShowSignup(true);
-    return;
-  }
+    if (!isAuthenticated || !userId) {
+      setShowLogin(true);
+      return;
+    }
 
   let currentUser = { id: userId, name: userName };
 
@@ -434,13 +405,13 @@ const sendMessage = async () => {
     }
     
     // ✅ Use the reliable, fresh user data
-    const body = {
+   const body = {
       message: msgContent,
       bot_name: bot?.name || "Default",
-      user_id: currentUser.id,
-      user_name: currentUser.name,
+      user_id: userId,
+      user_name: userName || "baby", // Provide a fallback
     };
-
+    
     const data = await apiFetch("/chat", {
       method: "POST",
       headers,
