@@ -239,7 +239,7 @@ const handleVerifySubmit = async (e) => {
     setShowVerify(false);
 
     // 3. Fetch user info after login
-    await fetchUserData(); // sets userId, userName, userEmail, hasPaid, messageCount
+    await fetchUserData(); // sets userId, userName, userEmail, hasPaid
 
     // 4. Show name modal only if display_name is empty
     const displayName = localStorage.getItem("userName") || "";
@@ -250,7 +250,6 @@ const handleVerifySubmit = async (e) => {
     setError(err.message || "Verification or login failed. Try again.");
   }
 };
-
 
   const closePaywallModal = () => setShowPaywall(false);
   const unlockAccess = () => {
@@ -301,58 +300,69 @@ const handleVerifySubmit = async (e) => {
   setError("");
 
   try {
-    await login(email, password);           // saves access + refresh tokens
+    // Perform login
+    const loginData = await login(email, password); // login saves tokens to localStorage
+    if (!loginData.access_token) throw new Error("Login failed");
+
     setIsAuthenticated(true);
     setShowLogin(false);
-    await fetchUserEmail();
-    
+
+    // Fetch user info immediately after login
+    await fetchUserData(); // sets userId, userName, userEmail, hasPaid
+
+    // Show name modal only if display_name is empty
+    const displayName = localStorage.getItem("userName") || "";
+    if (!displayName) setShowNameModal(true);
+
   } catch (err) {
     console.error("Login error:", err);
     setError(err.message || "Something went wrong. Please try again.");
   }
 };
+
   
+// ---- Fetch user email and sync minimal info ----
 const fetchUserEmail = async () => {
   try {
     const headers = await getAuthHeaders();
     if (!headers.Authorization) return; // skip if no token
 
-    const res = await apiFetch("/me", { method: "GET", headers });
-    const data = await res.json();
+    const data = await apiFetch("/me", { method: "GET", headers });
 
-    if (res.ok && data?.email) {
-  setUserEmail(data.email);
-  localStorage.setItem("userEmail", data.email);
+    if (data && data.email) {
+      setUserEmail(data.email);
+      localStorage.setItem("userEmail", data.email);
 
-  setUserId(data.id);
-  localStorage.setItem("userId", data.id);
+      setUserId(data.id);
+      localStorage.setItem("userId", data.id);
 
-  if (data.display_name) {
-    setUserName(data.display_name);
-    localStorage.setItem("userName", data.display_name);
-  }
-  setHasPaid(data.has_paid);
-  localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
-} else {
-  console.warn("fetchUserEmail failed", res.status, data);
-  silentLogout();
-}
+      if (data.display_name) {
+        setUserName(data.display_name);
+        localStorage.setItem("userName", data.display_name);
+      }
+
+      setHasPaid(data.has_paid);
+      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
+    } else {
+      console.warn("fetchUserEmail failed", data);
+      silentLogout();
+    }
 
   } catch (err) {
     console.error("fetchUserEmail error:", err);
     silentLogout();
   }
 };
-// ---- Fetch /me and sync frontend state + localStorage ----
+
+// ---- Fetch /me and sync full frontend state + localStorage ----
 const fetchUserData = async () => {
   try {
     const headers = await getAuthHeaders();
     if (!headers.Authorization) return; // skip if no token
 
-    const res = await apiFetch("/me", { method: "GET", headers });
-    const data = await res.json();
+    const data = await apiFetch("/me", { method: "GET", headers });
 
-    if (res.ok && data?.id) {
+    if (data && data.id) {
       // --- Sync state & localStorage ---
       setUserId(data.id);
       localStorage.setItem("userId", data.id);
@@ -371,16 +381,18 @@ const fetchUserData = async () => {
 
       // Sync free messages left (default to 5 if not set)
       const freeMessages = data.free_messages_left ?? 5;
-      setMessageCount(5 - freeMessages);
-      localStorage.setItem("message_count", (5 - freeMessages).toString());
+      const usedMessages = 5 - freeMessages;
+      setMessageCount(usedMessages);
+      localStorage.setItem("message_count", usedMessages.toString());
 
       // Show name modal if display_name is empty
       if (!displayName) setShowNameModal(true);
 
     } else {
-      console.warn("fetchUserData failed", res.status, data);
+      console.warn("fetchUserData failed", data);
       silentLogout();
     }
+
   } catch (err) {
     console.error("fetchUserData error:", err);
     silentLogout();
