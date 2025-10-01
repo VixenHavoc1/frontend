@@ -1,12 +1,14 @@
+// 🐛 FULL DEBUGGING ENABLED
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import AudioWave from "./AudioWave";
 import PremiumModal from './PremiumModal';
-import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient'
-import { apiFetch, login, signup, verifyEmail, fetchMe, sendMessage, logout } from "../api";
+import { apiFetch, login, signup, verifyEmail, fetchMe } from "../api";
+
 export default function ChatUI({ bot }) {
+  // --- State variables ---
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -20,336 +22,248 @@ export default function ChatUI({ bot }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
- 
   const [messageCount, setMessageCount] = useState(0);
-
   const [showVerify, setShowVerify] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
   const [verifyCode, setVerifyCode] = useState('');
   const [showNameModal, setShowNameModal] = useState(false);
 
-const CHAT_BACKEND_URL = "https://api.voxellaai.site";
-const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
-const [showPremiumUnlocked, setShowPremiumUnlocked] = useState(false);
-const [showAgeModal, setShowAgeModal] = useState(
-  !localStorage.getItem("age_verified")
-);
-const [selectedBot, setSelectedBot] = useState(null); // user picks bot first
-// At the top of your ChatUI component
-const [userName, setUserName] = useState(localStorage.getItem("userName") || "");
-const [userId, setUserId] = useState(localStorage.getItem("userId") || null);
-const [userEmail, setUserEmail] = useState(localStorage.getItem("userEmail") || null);
-const [hasPaid, setHasPaid] = useState(localStorage.getItem("hasPaid") === 'true');
- 
+  const CHAT_BACKEND_URL = "https://api.voxellaai.site";
+  const PAYMENT_BACKEND_URL = "https://api.voxellaai.site";
+
+  const [showPremiumUnlocked, setShowPremiumUnlocked] = useState(false);
+  const [showAgeModal, setShowAgeModal] = useState(!localStorage.getItem("age_verified"));
+  const [selectedBot, setSelectedBot] = useState(null);
+
+  const [userName, setUserName] = useState(localStorage.getItem("userName") || "");
+  const [userId, setUserId] = useState(localStorage.getItem("userId") || null);
+  const [userEmail, setUserEmail] = useState(localStorage.getItem("userEmail") || null);
+  const [hasPaid, setHasPaid] = useState(localStorage.getItem("hasPaid") === 'true');
+
+  // --- Debug Logs ---
+  const debug = (tag, ...msg) => console.log(`[${tag}]`, ...msg);
+
+  // --- Session ---
   const getSession = async () => {
-  const token = localStorage.getItem("access_token");
-  return token ? { access_token: token } : null;
-};
-const handleBotSelect = (bot) => {
-  setSelectedBot(bot);
+    const token = localStorage.getItem("access_token");
+    debug("SESSION", "Fetched session token:", token);
+    return token ? { access_token: token } : null;
+  };
 
-  // Only show age modal if not verified
-  if (!localStorage.getItem("age_verified")) {
-    setShowAgeModal(true);
-  }
-};
+  const silentLogout = () => {
+    debug("LOGOUT", "Clearing session + state");
+    localStorage.clear();
+    setIsAuthenticated(false);
+    setUserEmail(null);
+    setUserName("");
+    setUserId(null);
+  };
 
-  
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // --- Auth Headers ---
+  const getAuthHeaders = async () => {
+    let token = localStorage.getItem("access_token");
+    const refresh = localStorage.getItem("refresh_token");
 
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    debug("AUTH", "Checking for access token:", token);
+    if (!token && refresh) {
+      debug("AUTH", "No token, refreshing...");
+      try {
+        const res = await fetch(`${CHAT_BACKEND_URL}/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh_token: refresh }),
+        });
+        const data = await res.json();
+        debug("AUTH", "Refresh response:", data);
 
-  useEffect(() => {
-    const savedCount = localStorage.getItem("message_count");
-    if (savedCount) {
-      setMessageCount(parseInt(savedCount, 10));
+        if (res.ok && data.access_token) {
+          token = data.access_token;
+          localStorage.setItem("access_token", token);
+          debug("AUTH", "Refreshed access token saved");
+        } else {
+          debug("AUTH", "Refresh failed");
+          silentLogout();
+          return {};
+        }
+      } catch (err) {
+        debug("AUTH", "Refresh network error:", err);
+        silentLogout();
+        return {};
+      }
     }
-  }, []);
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    debug("AUTH", "Returning headers:", headers);
+    return headers;
+  };
 
-
- useEffect(() => {
-  const shown = localStorage.getItem("premium_modal_shown");
-  if (hasPaid && !shown) {
-    setShowPremiumUnlocked(true);
-    localStorage.setItem("premium_modal_shown", "true");
-  }
-}, [hasPaid]);
-
-  const fetchBlobMedia = async (url) => {
+  // --- User Sync ---
+  const syncUserData = async () => {
+    debug("SYNC", "Starting user sync...");
     try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("Failed to fetch media");
-      const blob = await res.blob();
-      return URL.createObjectURL(blob);
-    } catch (error) {
-      console.error("Error fetching media:", error);
+      const headers = await getAuthHeaders();
+      if (!headers.Authorization) {
+        debug("SYNC", "No auth headers, aborting");
+        return null;
+      }
+      const data = await apiFetch("/me", { method: "GET", headers });
+      debug("SYNC", "User data response:", data);
+
+      if (data && data.id) {
+        setUserId(data.id);
+        setUserEmail(data.email);
+        setUserName(data.display_name || "");
+        setHasPaid(data.has_paid);
+
+        localStorage.setItem("userId", data.id);
+        localStorage.setItem("userEmail", data.email);
+        localStorage.setItem("userName", data.display_name || "");
+        localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
+
+        debug("SYNC", "User state updated");
+        return data;
+      } else {
+        debug("SYNC", "No user ID in response");
+        silentLogout();
+        return null;
+      }
+    } catch (err) {
+      debug("SYNC", "Error:", err);
+      silentLogout();
       return null;
     }
   };
 
-
-const silentLogout = () => {
-    console.log("LOGOUT: Clearing user session data."); // 🐛 Debug log
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userId");
-    setIsAuthenticated(false);
-    setUserEmail(null);
-    setUserName("");
-    setUserId(null); // Explicitly reset userId
-  };
-// ---- Helper: getAuthHeaders ----
-const getAuthHeaders = async () => {
-    let token = localStorage.getItem("access_token");
-    const refresh = localStorage.getItem("refresh_token");
-
-    console.log("AUTH: Checking for access token..."); // 🐛 Debug log
-    if (!token && refresh) {
-      console.log("AUTH: Access token missing, trying to refresh..."); // 🐛 Debug log
-      try {
-        const res = await fetch(`${CHAT_BACKEND_URL}/refresh`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refresh_token: refresh }),
-        });
-        const data = await res.json();
-        if (res.ok && data.access_token) {
-          token = data.access_token;
-          localStorage.setItem("access_token", token);
-          console.log("AUTH: Token refreshed successfully."); // 🐛 Debug log
-        } else {
-          console.error("AUTH: Refresh failed, response was not ok.", data); // 🐛 Debug log
-          silentLogout();
-          return {};
-        }
-      } catch (err) {
-        console.error("AUTH: Refresh token network error:", err); // 🐛 Debug log
-        silentLogout();
-        return {};
-      }
-    }
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    console.log("AUTH: Final headers being returned:", headers); // 🐛 Debug log
-    return headers;
-  };
-
-
-
-
-const handleNameConfirm = async () => {
-  if (!userName.trim()) return;
-
-  setIsUpdatingName(true);
-  try {
-    const headers = await getAuthHeaders();
-    if (!headers.Authorization) {
-      console.error("No auth token — cannot update display name");
-      alert("Please log in first.");
-      setShowLogin(true);
-      setIsUpdatingName(false);
-      return;
-    }
-
-    const data = await apiFetch("/me/display-name", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...headers },
-      body: JSON.stringify({ display_name: userName.trim() }),
-    });
-
-    if (data && !data.error) {
-      // Save locally
-      localStorage.setItem("userName", userName.trim());
-      localStorage.setItem("nameSet", "true");
-      setShowNameModal(false);
+  // --- Lifecycle ---
+  useEffect(() => {
+    debug("INIT", "ChatUI mounted");
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      debug("INIT", "Found token, authenticating...");
+      setIsAuthenticated(true);
+      syncUserData();
     } else {
-      console.error("Failed to update display name:", data?.error);
-      setError("Failed to update name. Try again.");
+      debug("INIT", "No token found, guest mode");
     }
-  } catch (err) {
-    console.error("Error updating name:", err);
-    setError("Something went wrong. Try again.");
-  } finally {
-    setIsUpdatingName(false);
-  }
-};
 
-// ---- sendMessage function ----
+    const savedCount = localStorage.getItem("message_count");
+    if (savedCount) setMessageCount(parseInt(savedCount, 10));
+  }, []);
 
+  // --- Handlers ---
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    debug("LOGIN", "Started with email:", email);
+    try {
+      const loginData = await login(email, password);
+      debug("LOGIN", "Response:", loginData);
 
-     
-const handleKeyDown = (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault(); // prevent newline on Enter
-    sendMessage();
-  }
-};
+      if (!loginData.access_token) throw new Error("Login failed");
 
+      setIsAuthenticated(true);
+      setShowLogin(false);
 
-  const handleInputChange = (e) => {
-    setInput(e.target.value);
-    e.target.style.height = "auto";
-    e.target.style.height = `${e.target.scrollHeight}px`;
+      const userData = await syncUserData();
+      if (userData && !userData.display_name) setShowNameModal(true);
+
+      debug("LOGIN", "Success, user authenticated");
+    } catch (err) {
+      debug("LOGIN", "Error:", err);
+      setError(err.message || "Login failed");
+    }
   };
 
-  const getBotPic = (botName) => {
-    const name = botName?.toLowerCase() || "";
-    if (name.includes("lily")) return "/lily.png";
-    if (name.includes("plaksha")) return "/plaksha.png";
-    if (name.includes("raven")) return "/raven.png";
-    return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic14.png";
+  const handleSignupSubmit = async (e) => {
+    e.preventDefault();
+    debug("SIGNUP", "Started with email:", email);
+    setError("");
+    try {
+      await apiFetch("/signup", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+      debug("SIGNUP", "Success");
+      setShowSignup(false);
+      setShowVerify(true);
+    } catch (err) {
+      debug("SIGNUP", "Error:", err);
+      setError(err.message || "Signup failed");
+    }
   };
 
- const handleSignupSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  try {
-    // Signup never uses userId
-    await apiFetch("/signup", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
+  const handleVerifySubmit = async (e) => {
+    e.preventDefault();
+    debug("VERIFY", "Started with code:", verifyCode);
+    setError("");
+    try {
+      await verifyEmail(email, verifyCode);
+      const loginData = await login(email, password);
+      debug("VERIFY", "Login after verify response:", loginData);
 
-    setShowSignup(false);
-    setShowVerify(true);
-  } catch (err) {
-    console.error("Signup error:", err);
-    setError(err.message || "Something went wrong. Please try again.");
-  }
-};
+      if (!loginData.access_token) throw new Error("Login failed");
 
-const handleVerifySubmit = async (e) => {
-  e.preventDefault();
-  setError("");
+      setIsAuthenticated(true);
+      setShowVerify(false);
 
-  try {
-    // 1. Verify the email with code
-    await verifyEmail(email, verifyCode);
+      const userData = await syncUserData();
+      if (!userData.display_name) setShowNameModal(true);
 
-    // 2. Auto-login immediately after verification
-    const loginData = await login(email, password); // saves access + refresh tokens in localStorage
-    if (!loginData.access_token) throw new Error("Login failed");
-
-    setIsAuthenticated(true);
-    setShowVerify(false);
-
-    // 3. Fetch user info after login
-    await fetchUserData(); // sets userId, userName, userEmail, hasPaid
-
-    // 4. Show name modal only if display_name is empty
-    const displayName = localStorage.getItem("userName") || "";
-    if (!displayName) setShowNameModal(true);
-
-  } catch (err) {
-    console.error("Verification/Login error:", err);
-    setError(err.message || "Verification or login failed. Try again.");
-  }
-};
-
-  const closePaywallModal = () => setShowPaywall(false);
-  const unlockAccess = () => {
-    localStorage.setItem("has_paid", "true");
-    setHasPaid(true);
-    setShowPaywall(false);
+      debug("VERIFY", "Email verified + logged in");
+    } catch (err) {
+      debug("VERIFY", "Error:", err);
+      setError(err.message || "Verification failed");
+    }
   };
 
-  const handleTierClick = async (tier_id) => {
-  const priceMap = {
-    tier1: 5,
-    tier2: 10,
-    tier3: 20,
-  };
-  const price_amount = priceMap[tier_id] || 5;
+  const sendMessage = async () => {
+    debug("SEND", "Message initiated:", input);
 
-  try {
-    const authHeaders = await getAuthHeaders();
-    if (!authHeaders.Authorization) {
-      alert("Please log in first.");
+    if (!isAuthenticated || !userId) {
+      debug("SEND", "Blocked — user not authenticated");
       setShowLogin(true);
       return;
     }
-
-    const { ok, data } = await apiFetch("/api/create-invoice", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders,
-      },
-      body: JSON.stringify({ tier_id, price_amount }),
-    });
-
-   if (ok && data?.payment_url) {
-     window.location.href = data.payment_url;
-    } else {
-      console.error("Invoice error:", data);
-      alert(data?.detail || "Payment creation failed.");
+    if (!input.trim()) {
+      debug("SEND", "Blocked — input empty");
+      return;
     }
-  } catch (err) {
-    console.error("Invoice error:", err);
-    alert("Failed to initiate payment.");
-  }
-};
- 
- 
-// ---- Fetch user email and sync minimal info ----
-// Replace your old fetchUserData and fetchUserEmail with this single function
-const syncUserData = async () => {
-    console.log("SYNC: Attempting to sync user data from backend..."); // 🐛 Debug log
-    try {
-      const headers = await getAuthHeaders();
-      if (!headers.Authorization) {
-        console.log("SYNC: No authorization token, cannot sync."); // 🐛 Debug log
-        return null;
-      }
-      const data = await apiFetch("/me", { method: "GET", headers });
-      if (data && data.id) {
-        console.log("SYNC: User data fetched successfully.", data); // 🐛 Debug log
-        setUserId(data.id);
-        setUserEmail(data.email);
-        setUserName(data.display_name || "");
-        setHasPaid(data.has_paid);
-        localStorage.setItem("userId", data.id);
-        localStorage.setItem("userEmail", data.email);
-        localStorage.setItem("userName", data.display_name || "");
-        localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
-        return data;
-      } else {
-        console.error("SYNC: User data fetch failed or returned no ID.", data); // 🐛 Debug log
-        silentLogout();
-        return null;
-      }
-    } catch (err) {
-      console.error("SYNC: User data sync error:", err); // 🐛 Debug log
-      silentLogout();
-      return null;
-    }
-  };
+    if (!hasPaid && messageCount >= 5) {
+      debug("SEND", "Free limit reached, showing paywall");
+      setShowPaywall(true);
+      return;
+    }
 
-  // Initial load effect
-  useEffect(() => {
-    const initializeUserSession = async () => {
-      const token = localStorage.getItem("access_token");
-      if (token) {
-        console.log("INIT: Found existing access token. Authenticating."); // 🐛 Debug log
-        setIsAuthenticated(true);
-        await syncUserData();
-      } else {
-        console.log("INIT: No access token found. User is not authenticated."); // 🐛 Debug log
-      }
-    };
-    initializeUserSession();
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    inputRef.current?.focus();
-    const savedCount = localStorage.getItem("message_count");
-    if (savedCount) {
-      setMessageCount(parseInt(savedCount, 10));
-    }
-  }, []);
+    const userMessage = { sender: "user", text: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+
+    try {
+      const headers = await getAuthHeaders();
+      const body = {
+        message: input,
+        bot_name: bot?.name || "Default",
+        user_id: userId,
+        user_name: userName || "baby",
+      };
+      debug("SEND", "Sending body:", body);
+
+      const data = await apiFetch("/chat", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      debug("SEND", "Response:", data);
+    } catch (err) {
+      debug("SEND", "Error:", err);
+      silentLogout();
+      setShowLogin(true);
+    } finally {
+      setIsTyping(false);
+      debug("SEND", "Finished");
+    }
+  };
+
+  // rest of render unchanged ...
+
 
 // Login handler
 const handleLoginSubmit = async (e) => {
