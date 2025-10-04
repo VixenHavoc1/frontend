@@ -238,8 +238,8 @@ const handleVerifySubmit = async (e) => {
     setIsAuthenticated(true);
     setShowVerify(false);
 
-    // 3. Fetch user info after login
-    await fetchUserData(); // sets userId, userName, userEmail, hasPaid
+    // ✅ 3. Fetch user info after login
+    await syncUserData();
 
     // 4. Show name modal only if display_name is empty
     const displayName = localStorage.getItem("userName") || "";
@@ -250,6 +250,7 @@ const handleVerifySubmit = async (e) => {
     setError(err.message || "Verification or login failed. Try again.");
   }
 };
+
 
   const closePaywallModal = () => setShowPaywall(false);
   const unlockAccess = () => {
