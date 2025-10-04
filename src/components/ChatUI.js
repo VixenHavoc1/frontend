@@ -398,11 +398,11 @@ const sendMessage = async () => {
   const currentUserId = userId;
   const currentUserName = userName || "baby";
 
-  // Add user's message to UI
+  // Add user's message to UI immediately
   const userMessage = { sender: "user", text: input };
   setMessages(prev => [...prev, userMessage]);
 
-  // Clear input and increment local message count
+  // Clear input and increment message count
   setInput("");
   const newCount = messageCount + 1;
   setMessageCount(newCount);
@@ -439,19 +439,19 @@ const sendMessage = async () => {
       throw new Error("Authorization failed. Please log in again.");
     }
 
-    // Extract bot reply
+    // Declare bot reply variables outside the block
     let botReplyText = "";
     let botAudio = null;
     let botImage = null;
 
-    if (data?.choices?.[0]?.message) {
-      const messageData = data.choices[0].message;
-     const botReplyText = data.response || "";
-const botAudio = data.audio || null;
-const botImage = data.image || null;
-
+    // Extract bot response if available
+    if (data) {
+      botReplyText = data.response || "";
+      botAudio = data.audio || null;
+      botImage = data.image || null;
     }
 
+    // Append bot message to UI
     if (botReplyText) {
       const botMessage = {
         sender: "bot",
@@ -475,7 +475,6 @@ const botImage = data.image || null;
     console.log("SEND: Message process finished.");
   }
 };
-
 
   return (
     <div className="flex flex-col h-screen bg-[#2C1F3D] text-white">
