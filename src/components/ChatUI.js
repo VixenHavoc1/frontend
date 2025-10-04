@@ -374,73 +374,107 @@ const handleLoginSubmit = async (e) => {
   }
 };
   // Empty dependency array means it runs only once on mount
-// In ChatUI.js
 const sendMessage = async () => {
-    console.log("SEND: Message initiated."); // 🐛 Debug log
-    if (!isAuthenticated || !userId) {
-      console.warn("SEND: User not authenticated or userId is null. Showing login modal."); // 🐛 Debug log
-      setShowLogin(true);
-      return;
-    }
-    if (!input.trim()) {
-      console.warn("SEND: Input is empty. Aborting."); // 🐛 Debug log
-      return;
-    }
+  console.log("SEND: Message initiated.");
 
-    const currentUserId = userId;
-    const currentUserName = userName || "baby";
+  if (!isAuthenticated || !userId) {
+    console.warn("SEND: User not authenticated or userId is null. Showing login modal.");
+    setShowLogin(true);
+    return;
+  }
 
-    if (!hasPaid && messageCount >= 5) {
-      console.log("SEND: Free message limit reached. Showing paywall."); // 🐛 Debug log
-      setShowPaywall(true);
-      return;
-    }
+  if (!input.trim()) {
+    console.warn("SEND: Input is empty. Aborting.");
+    return;
+  }
 
-    setIsTyping(true);
-    const userMessage = { sender: "user", text: input };
-    setMessages((prev) => [...prev, userMessage]);
-    const msgContent = input;
-    setInput("");
+  // Free message limit check
+  if (!hasPaid && messageCount >= 5) {
+    console.log("SEND: Free message limit reached. Showing paywall.");
+    setShowPaywall(true);
+    return;
+  }
 
-    try {
-      const headers = await getAuthHeaders();
-      if (!headers.Authorization) {
-        console.error("SEND: No Authorization header returned. Session expired?"); // 🐛 Debug log
-        throw new Error("Authorization failed. Please log in again.");
-      }
+  const currentUserId = userId;
+  const currentUserName = userName || "baby";
 
-      const body = {
-        message: msgContent,
-        bot_name: bot?.name || "Default",
-        user_id: currentUserId,
-        user_name: currentUserName,
-      };
-      console.log("SEND: Sending message to API with body:", body); // 🐛 Debug log
-      
-      const data = await apiFetch("/chat", {
-        method: "POST",
-        headers,
-        body: JSON.stringify(body),
-      });
+  // Add user's message to UI
+  const userMessage = { sender: "user", text: input };
+  setMessages(prev => [...prev, userMessage]);
 
-      console.log("SEND: Received response from API:", data); // 🐛 Debug log
+  // Clear input and increment local message count
+  setInput("");
+  const newCount = messageCount + 1;
+  setMessageCount(newCount);
+  localStorage.setItem("message_count", newCount.toString());
 
-      if (data?.error?.code === 401) {
-        console.error("SEND: Received 401 Unauthorized from server. Token expired."); // 🐛 Debug log
-        throw new Error("Authorization failed. Please log in again.");
-      }
+  setIsTyping(true);
 
-      // ... (rest of your sendMessage logic for handling the response) ...
-    } catch (err) {
-      console.error("SEND: Message sending failed:", err); // 🐛 Debug log
-      alert(err.message || "Failed to send message. Your session may have expired.");
-      silentLogout();
-      setShowLogin(true);
-    } finally {
-      setIsTyping(false);
-      console.log("SEND: Message process finished."); // 🐛 Debug log
-    }
-  };
+  try {
+    const headers = await getAuthHeaders();
+    if (!headers.Authorization) {
+      console.error("SEND: No Authorization header returned. Session expired?");
+      throw new Error("Authorization failed. Please log in again.");
+    }
+
+    const body = {
+      message: userMessage.text,
+      bot_name: bot?.name || "Default",
+      user_id: currentUserId,
+      user_name: currentUserName,
+    };
+
+    console.log("SEND: Sending message to API with body:", body);
+
+    const data = await apiFetch("/chat", {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    console.log("SEND: Received response from API:", data);
+
+    if (data?.error?.code === 401) {
+      console.error("SEND: Received 401 Unauthorized from server.");
+      throw new Error("Authorization failed. Please log in again.");
+    }
+
+    // Extract bot reply
+    let botReplyText = "";
+    let botAudio = null;
+    let botImage = null;
+
+    if (data?.choices?.[0]?.message) {
+      const messageData = data.choices[0].message;
+      botReplyText = messageData.content || "";
+      botAudio = messageData.audio || null;
+      botImage = messageData.image || null;
+    }
+
+    if (botReplyText) {
+      const botMessage = {
+        sender: "bot",
+        text: botReplyText,
+        audio: botAudio,
+        image: botImage,
+      };
+      setMessages(prev => [...prev, botMessage]);
+    } else {
+      console.warn("SEND: Bot response empty");
+    }
+
+  } catch (err) {
+    console.error("SEND: Message sending failed:", err);
+    alert(err.message || "Failed to send message. Your session may have expired.");
+    silentLogout();
+    setShowLogin(true);
+  } finally {
+    setIsTyping(false);
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    console.log("SEND: Message process finished.");
+  }
+};
+
 
   return (
     <div className="flex flex-col h-screen bg-[#2C1F3D] text-white">
