@@ -446,9 +446,10 @@ const sendMessage = async () => {
 
     if (data?.choices?.[0]?.message) {
       const messageData = data.choices[0].message;
-      botReplyText = messageData.content || "";
-      botAudio = messageData.audio || null;
-      botImage = messageData.image || null;
+     const botReplyText = data.response || "";
+const botAudio = data.audio || null;
+const botImage = data.image || null;
+
     }
 
     if (botReplyText) {
