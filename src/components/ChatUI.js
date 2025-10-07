@@ -20,7 +20,7 @@ export default function ChatUI({ bot }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
- 
+ const paymentUrl = data?.payment_url || data?.payment_link;
   const [messageCount, setMessageCount] = useState(0);
 
   const [showVerify, setShowVerify] = useState(false);
@@ -285,7 +285,7 @@ const handleVerifySubmit = async (e) => {
     });
 
    if (ok && data?.payment_link) {
-   window.location.href = data.payment_link;
+   window.location.href = paymentUrl;
  } else {
    console.error("Invoice error:", data);
    alert(data?.detail || "Payment creation failed.");
