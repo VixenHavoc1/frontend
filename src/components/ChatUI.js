@@ -284,12 +284,12 @@ const handleVerifySubmit = async (e) => {
       body: JSON.stringify({ tier_id, price_amount }),
     });
 
-   if (ok && data?.payment_url) {
-     window.location.href = data.payment_url;
-    } else {
-      console.error("Invoice error:", data);
-      alert(data?.detail || "Payment creation failed.");
-    }
+   if (ok && data?.payment_link) {
+   window.location.href = data.payment_link;
+ } else {
+   console.error("Invoice error:", data);
+   alert(data?.detail || "Payment creation failed.");
+ }
   } catch (err) {
     console.error("Invoice error:", err);
     alert("Failed to initiate payment.");
