@@ -259,14 +259,14 @@ const handleVerifySubmit = async (e) => {
     setShowPaywall(false);
   };
 
-  const handleTierClick = async (tier_id) => {
+ const handleTierClick = async (tier_id) => {
   const priceMap = {
     tier1: 5,
     tier2: 10,
     tier3: 20,
   };
   const price_amount = priceMap[tier_id] || 5;
-   const paymentUrl = data?.payment_url || data?.payment_link;
+
   try {
     const authHeaders = await getAuthHeaders();
     if (!authHeaders.Authorization) {
@@ -275,7 +275,8 @@ const handleVerifySubmit = async (e) => {
       return;
     }
 
-    const { ok, data } = await apiFetch("/api/create-invoice", {
+    // Call backend to create invoice
+    const res = await apiFetch("/api/create-invoice", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -284,18 +285,19 @@ const handleVerifySubmit = async (e) => {
       body: JSON.stringify({ tier_id, price_amount }),
     });
 
-   if (ok && data?.payment_link) {
-   window.location.href = paymentUrl;
- } else {
-   console.error("Invoice error:", data);
-   alert(data?.detail || "Payment creation failed.");
- }
+    if (res.ok && res.data?.payment_link) {
+      // Redirect user to NowPayments
+      window.location.href = res.data.payment_url;
+    } else {
+      console.error("Invoice creation failed:", res.data);
+      alert(res.data?.detail || "Payment creation failed.");
+    }
   } catch (err) {
     console.error("Invoice error:", err);
     alert("Failed to initiate payment.");
   }
 };
- 
+
  
 // ---- Fetch user email and sync minimal info ----
 // Replace your old fetchUserData and fetchUserEmail with this single function
