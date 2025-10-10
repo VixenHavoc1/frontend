@@ -285,9 +285,9 @@ const handleVerifySubmit = async (e) => {
       body: JSON.stringify({ tier_id, price_amount }),
     });
 
-    if (res.ok && res.data?.payment_link) {
+    if (res.ok && res.data?.payment_url) {
       // Redirect user to NowPayments
-      window.location.href = res.data.payment_link;
+      window.location.href = res.data.payment_url;
     } else {
       console.error("Invoice creation failed:", res.data);
       alert(res.data?.detail || "Payment creation failed.");
