@@ -260,41 +260,32 @@ const handleVerifySubmit = async (e) => {
   };
 
  const handleTierClick = async (tier_id) => {
-  const priceMap = {
-    tier1: 5,
-    tier2: 10,
-    tier3: 20,
-  };
+  const priceMap = { tier1: 5, tier2: 10, tier3: 20 };
   const price_amount = priceMap[tier_id] || 5;
 
   try {
-    const authHeaders = await getAuthHeaders();
-    if (!authHeaders.Authorization) {
-      alert("Please log in first.");
+    const headers = await getAuthHeaders();
+    if (!headers.Authorization) {
+      alert("Please log in first to purchase a tier.");
       setShowLogin(true);
       return;
     }
 
-    // Call backend to create invoice
     const res = await apiFetch("/api/create-invoice", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders,
-      },
+      headers: { "Content-Type": "application/json", ...headers },
       body: JSON.stringify({ tier_id, price_amount }),
     });
 
     if (res.ok && res.data?.payment_url) {
-      // Redirect user to NowPayments
       window.location.href = res.data.payment_url;
     } else {
       console.error("Invoice creation failed:", res.data);
-      alert(res.data?.detail || "Payment creation failed.");
+      alert(res.data?.detail || "Failed to create payment. Try again.");
     }
   } catch (err) {
-    console.error("Invoice error:", err);
-    alert("Failed to initiate payment.");
+    console.error("Payment error:", err);
+    alert("Failed to initiate payment. Please try again.");
   }
 };
 
@@ -302,36 +293,34 @@ const handleVerifySubmit = async (e) => {
 // ---- Fetch user email and sync minimal info ----
 // Replace your old fetchUserData and fetchUserEmail with this single function
 const syncUserData = async () => {
-    console.log("SYNC: Attempting to sync user data from backend..."); // 🐛 Debug log
-    try {
-      const headers = await getAuthHeaders();
-      if (!headers.Authorization) {
-        console.log("SYNC: No authorization token, cannot sync."); // 🐛 Debug log
-        return null;
-      }
-      const data = await apiFetch("/me", { method: "GET", headers });
-      if (data && data.id) {
-        console.log("SYNC: User data fetched successfully.", data); // 🐛 Debug log
-        setUserId(data.id);
-        setUserEmail(data.email);
-        setUserName(data.display_name || "");
-        setHasPaid(data.has_paid);
-        localStorage.setItem("userId", data.id);
-        localStorage.setItem("userEmail", data.email);
-        localStorage.setItem("userName", data.display_name || "");
-        localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
-        return data;
-      } else {
-        console.error("SYNC: User data fetch failed or returned no ID.", data); // 🐛 Debug log
-        silentLogout();
-        return null;
-      }
-    } catch (err) {
-      console.error("SYNC: User data sync error:", err); // 🐛 Debug log
-      silentLogout();
-      return null;
-    }
-  };
+  try {
+    const headers = await getAuthHeaders();
+    if (!headers.Authorization) return null;
+
+    const data = await apiFetch("/me", { method: "GET", headers });
+    if (data && data.id) {
+      setUserId(data.id);
+      setUserEmail(data.email);
+      setUserName(data.display_name || "");
+      setHasPaid(data.has_paid || false);
+
+      localStorage.setItem("userId", data.id);
+      localStorage.setItem("userEmail", data.email);
+      localStorage.setItem("userName", data.display_name || "");
+      localStorage.setItem("hasPaid", data.has_paid ? "true" : "false");
+
+      return data;
+    } else {
+      silentLogout();
+      return null;
+    }
+  } catch (err) {
+    console.error("SYNC error:", err);
+    silentLogout();
+    return null;
+  }
+};
+
 
   // Initial load effect
   useEffect(() => {
@@ -365,14 +354,11 @@ const handleLoginSubmit = async (e) => {
     setIsAuthenticated(true);
     setShowLogin(false);
 
-    const userData = await syncUserData(); // Use the new function
-
-    // The name modal logic now correctly uses the synced state
-    if (userData && !userData.display_name) {
-      setShowNameModal(true);
-    }
+    const userData = await syncUserData();
+    if (userData && !userData.display_name) setShowNameModal(true);
   } catch (err) {
-    // ... error handling
+    console.error(err);
+    setError(err.message || "Login failed");
   }
 };
   // Empty dependency array means it runs only once on mount
