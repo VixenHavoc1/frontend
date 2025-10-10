@@ -20,7 +20,7 @@ export default function ChatUI({ bot }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
- const paymentUrl = data?.payment_url || data?.payment_link;
+
   const [messageCount, setMessageCount] = useState(0);
 
   const [showVerify, setShowVerify] = useState(false);
@@ -266,7 +266,7 @@ const handleVerifySubmit = async (e) => {
     tier3: 20,
   };
   const price_amount = priceMap[tier_id] || 5;
-
+   const paymentUrl = data?.payment_url || data?.payment_link;
   try {
     const authHeaders = await getAuthHeaders();
     if (!authHeaders.Authorization) {
