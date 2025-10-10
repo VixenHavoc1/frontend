@@ -226,30 +226,26 @@ const handleKeyDown = (e) => {
 const handleVerifySubmit = async (e) => {
   e.preventDefault();
   setError("");
-
   try {
-    // 1. Verify the email with code
     await verifyEmail(email, verifyCode);
 
-    // 2. Auto-login immediately after verification
-    const loginData = await login(email, password); // saves access + refresh tokens in localStorage
+    const loginData = await login(email, password);
     if (!loginData.access_token) throw new Error("Login failed");
 
     setIsAuthenticated(true);
     setShowVerify(false);
 
-    // ✅ 3. Fetch user info after login
-    await syncUserData();
+    const userData = await syncUserData();
 
-    // 4. Show name modal only if display_name is empty
-    const displayName = localStorage.getItem("userName") || "";
-    if (!displayName) setShowNameModal(true);
-
+    if (userData && !userData.display_name) {
+      setShowNameModal(true);
+    }
   } catch (err) {
-    console.error("Verification/Login error:", err);
-    setError(err.message || "Verification or login failed. Try again.");
+    console.error(err);
+    setError(err.message || "Verification or login failed");
   }
 };
+
 
 
   const closePaywallModal = () => setShowPaywall(false);
