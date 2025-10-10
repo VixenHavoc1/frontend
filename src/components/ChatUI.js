@@ -287,7 +287,7 @@ const handleVerifySubmit = async (e) => {
 
     if (res.ok && res.data?.payment_link) {
       // Redirect user to NowPayments
-      window.location.href = res.data.payment_url;
+      window.location.href = res.data.payment_link;
     } else {
       console.error("Invoice creation failed:", res.data);
       alert(res.data?.detail || "Payment creation failed.");
