@@ -22,9 +22,10 @@ export default function BotSelection({ onSelect }) {
   const renderSection = (title, emoji, bots) => (
     <section className="px-4 mt-8">
       {/* Section Heading */}
-      <h2 className="text-xl sm:text-2xl font-semibold mb-4 flex items-center gap-2 text-purple-200 tracking-wide">
-        <span>{emoji}</span> {title}
-      </h2>
+      <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 flex justify-center items-center gap-3 text-purple-300 tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+  <span className="text-2xl">{emoji}</span> {title}
+</h2>
+
 
       {/* Desktop Grid */}
       <div className="hidden sm:grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6">
@@ -35,7 +36,7 @@ export default function BotSelection({ onSelect }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
             onClick={() => onSelect(bot.name)}
-            className="relative rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-all duration-300 hover:-translate-y-1"
+            className="relative rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-all duration-300 hover:-translate-y-1 bot-glow"
           >
             <img
               src={bot.image}
@@ -63,7 +64,7 @@ export default function BotSelection({ onSelect }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => onSelect(bot.name)}
-              className="relative min-w-[200px] h-[300px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-transform duration-300 snap-center"
+              className="relative min-w-[200px] h-[300px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-transform duration-300 snap-center bot-glow"
             >
               <img
                 src={bot.image}
