@@ -76,9 +76,7 @@ export default function BotSelection({ onSelect }) {
   <h1 className="text-3xl font-extrabold tracking-wide text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
     Voxella AI
   </h1>
-  <p className="text-sm text-purple-300/80 mt-1 font-light">
-    Choose your fantasy companion
-  </p>
+
 </header>
 
       {/* Sections */}
