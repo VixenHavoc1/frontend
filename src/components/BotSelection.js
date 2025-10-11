@@ -64,29 +64,30 @@ export default function BotSelection({ onSelect }) {
     ))}
   </div>
 
-  {/* Mobile Scrollable Row */}
-  <div className="flex sm:hidden gap-4 overflow-x-auto pb-4 scrollbar-hide">
-    {bots.map((bot, i) => (
-      <motion.div
-        key={bot.name}
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: i * 0.1 }}
-        onClick={() => onSelect(bot.name)}
-        className="min-w-[220px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-purple-500/40 transition-all duration-300"
-      >
-        <img
-          src={bot.image}
-          alt={bot.name}
-          className="h-[300px] w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4">
-          <h3 className="text-lg font-semibold text-white">{bot.name}</h3>
-          <p className="text-sm text-purple-200">{bot.vibe}</p>
-        </div>
-      </motion.div>
-    ))}
-  </div>
+ 
+ {/* Mobile Scrollable Row */}
+<div className="flex sm:hidden gap-4 overflow-x-auto pb-4 px-2 scrollbar-hide snap-x snap-mandatory scroll-smooth-x">
+  {bots.map((bot, i) => (
+    <motion.div
+      key={bot.name}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: i * 0.05 }}
+      onClick={() => onSelect(bot.name)}
+      className="relative min-w-[200px] h-[300px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-purple-500/40 transition-transform duration-300 snap-center"
+    >
+      <img
+        src={bot.image}
+        alt={bot.name}
+        className="h-full w-full object-cover"
+        loading="lazy"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-3">
+        <h3 className="text-base font-semibold text-white">{bot.name}</h3>
+        <p className="text-xs text-purple-200">{bot.vibe}</p>
+      </div>
+    </motion.div>
+  ))}
 </div>
 
   );
