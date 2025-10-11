@@ -85,14 +85,21 @@ export default function BotSelection({ onSelect }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#05010a] via-[#0f0820] to-[#1a0e2b] text-white">
       {/* Header */}
-      <header className="p-6 text-center bg-gradient-to-r from-[#130824] via-[#28164a] to-[#130824] shadow-[0_0_30px_rgba(120,60,255,0.3)] border-b border-purple-800/40">
-        <h1 className="text-3xl font-extrabold tracking-wide text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
-          Voxella AI
-        </h1>
-        <p className="text-sm text-purple-300 mt-1 tracking-wide">
-          Choose your fantasy. Create your connection.
-        </p>
-      </header>
+      <header className="relative p-6 text-center overflow-hidden border-b border-purple-800/40">
+  {/* Animated Gradient Background */}
+  <div className="absolute inset-0 animate-aurora opacity-70" />
+
+  {/* Overlay to darken for text contrast */}
+  <div className="absolute inset-0 bg-gradient-to-r from-[#130824]/90 via-[#28164a]/70 to-[#130824]/90" />
+
+  {/* Header Content */}
+  <div className="relative z-10">
+    <h1 className="text-3xl font-extrabold tracking-wide text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
+      Voxella AI
+    </h1>
+    
+  </div>
+</header>
 
       {/* Sections */}
       {renderSection("AI Girlfriends", "💕", girlfriends)}
