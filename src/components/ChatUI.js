@@ -255,36 +255,44 @@ const handleVerifySubmit = async (e) => {
     setShowPaywall(false);
   };
 
- const handleTierClick = async (tier_id) => {
-  const priceMap = { tier1: 5, tier2: 10, tier3: 20 };
-  const price_amount = priceMap[tier_id] || 5;
-
+ 
+async function handleTierClick(tierId) {
   try {
-    const headers = await getAuthHeaders();
-    if (!headers.Authorization) {
-      alert("Please log in first to purchase a tier.");
-      setShowLogin(true);
-      return;
-    }
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) throw new Error("User not authenticated");
 
-    const res = await apiFetch("/api/create-invoice", {
+    console.log("🟢 [DEBUG] Creating invoice for tier:", tierId);
+
+    const res = await fetch(`${import.meta.env.VITE_PAYMENT_BACKEND_URL}/api/create-invoice`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...headers },
-      body: JSON.stringify({ tier_id, price_amount }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ tier_id: tierId }),
     });
 
-    if (res.ok && res.data?.payment_url) {
-      window.location.href = res.data.payment_url;
-    } else {
-      console.error("Invoice creation failed:", res.data);
-      alert(res.data?.detail || "Failed to create payment. Try again.");
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("❌ [ERROR] Invoice creation failed:", errText);
+      throw new Error(`Failed with status ${res.status}`);
     }
-  } catch (err) {
-    console.error("Payment error:", err);
-    alert("Failed to initiate payment. Please try again.");
-  }
-};
 
+    const data = await res.json();
+    console.log("✅ [DEBUG] Invoice created:", data);
+
+    // data.payment_link is returned by backend
+    if (data.payment_link) {
+      window.location.href = data.payment_link;
+    } else {
+      console.error("❌ [ERROR] No payment_link found in response:", data);
+      alert("Something went wrong. Please try again.");
+    }
+ } catch (err) {
+    console.error("❌ [ERROR] Invoice creation failed:", err);
+    alert("Failed to create payment. Please try again.");
+  }
+}
  
 // ---- Fetch user email and sync minimal info ----
 // Replace your old fetchUserData and fetchUserEmail with this single function
@@ -338,6 +346,7 @@ const syncUserData = async () => {
       setMessageCount(parseInt(savedCount, 10));
     }
   }, []);
+
 
 // Login handler
 const handleLoginSubmit = async (e) => {
