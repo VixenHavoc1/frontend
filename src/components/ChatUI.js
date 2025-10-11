@@ -209,11 +209,19 @@ const handleKeyDown = (e) => {
   e.preventDefault();
   setError("");
   try {
-    // Signup never uses userId
-    await apiFetch("/signup", {
+    const res = await apiFetch("/signup", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
+
+    // If API returns error info
+    if (res?.error) {
+      // Check if email already exists / verified
+      if (res.error === "EMAIL_ALREADY_VERIFIED") {
+        setError("Email already registered. Please log in.");
+        return;
+      } 
+    }
 
     setShowSignup(false);
     setShowVerify(true);
