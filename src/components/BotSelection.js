@@ -50,28 +50,13 @@ export default function BotSelection({ onSelect }) {
         ))}
       </div>
 
-      {/* Mobile Scrollable Row with Snap-to-Center */}
-      <div className="relative sm:hidden">
+      {/* Mobile Scrollable Row */}
+      <div className="sm:hidden relative">
         {/* Fade Overlays */}
-        <div className="scroll-fade-left" />
-        <div className="scroll-fade-right" />
+        <div className="absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-[#0b0615] to-transparent pointer-events-none z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#0b0615] to-transparent pointer-events-none z-10" />
 
-        <motion.div
-          drag="x"
-          dragConstraints={{ left: -9999, right: 0 }}
-          dragElastic={0.15}
-          onDragEnd={(event) => {
-            const container = event.target;
-            const scrollLeft = container.scrollLeft;
-            const cardWidth = 220; // min-w-[200px] + gap (20px)
-            const nearestIndex = Math.round(scrollLeft / cardWidth);
-            container.scrollTo({
-              left: nearestIndex * cardWidth,
-              behavior: "smooth",
-            });
-          }}
-          className="flex gap-4 overflow-x-auto pb-4 px-2 scrollbar-hide snap-x snap-mandatory scroll-smooth-x"
-        >
+        <div className="flex gap-4 overflow-x-auto pb-4 px-2 snap-x snap-mandatory scroll-smooth">
           {bots.map((bot, i) => (
             <motion.div
               key={bot.name}
@@ -79,7 +64,7 @@ export default function BotSelection({ onSelect }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => onSelect(bot.name)}
-              className="relative min-w-[200px] h-[300px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-transform duration-300 snap-center bot-glow bot-sparkle"
+              className="relative w-[70vw] sm:w-[200px] h-[300px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-transform duration-300 snap-center bot-glow bot-sparkle"
             >
               <img
                 src={bot.image}
@@ -93,7 +78,7 @@ export default function BotSelection({ onSelect }) {
               </div>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -102,13 +87,8 @@ export default function BotSelection({ onSelect }) {
     <div className="min-h-screen bg-gradient-to-b from-[#05010a] via-[#0f0820] to-[#1a0e2b] text-white">
       {/* Header */}
       <header className="relative p-6 text-center overflow-hidden border-b border-purple-800/40">
-        {/* Animated Gradient Background */}
         <div className="absolute inset-0 animate-aurora opacity-70" />
-
-        {/* Overlay to darken for text contrast */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#130824]/90 via-[#28164a]/70 to-[#130824]/90" />
-
-        {/* Header Content */}
         <div className="relative z-10">
           <h1 className="text-3xl font-extrabold tracking-wide text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
             Voxella AI
