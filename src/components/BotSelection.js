@@ -72,11 +72,14 @@ export default function BotSelection({ onSelect }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-[#1a1027] to-[#2c1f3d] text-white">
       {/* Header */}
-      <header className="p-6 text-center bg-gradient-to-r from-purple-900 to-purple-600 shadow-md">
-        <h1 className="text-3xl font-extrabold tracking-wide text-white drop-shadow-lg">
-          Voxella AI
-        </h1>
-      </header>
+     <header className="p-6 text-center bg-gradient-to-r from-[#1f0f2e] via-[#3b1d52] to-[#1f0f2e] shadow-[0_0_20px_rgba(139,92,246,0.3)] border-b border-purple-800/40">
+  <h1 className="text-3xl font-extrabold tracking-wide text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
+    Voxella AI
+  </h1>
+  <p className="text-sm text-purple-300/80 mt-1 font-light">
+    Choose your fantasy companion
+  </p>
+</header>
 
       {/* Sections */}
       {renderSection("AI Girlfriend", girlfriends)}
