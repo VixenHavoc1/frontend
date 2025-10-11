@@ -40,33 +40,55 @@ export default function BotSelection({ onSelect }) {
   ];
 
   const renderSection = (title, bots) => (
-    <div className="my-8">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-purple-200">
-        {title}
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6 px-4">
-        {bots.map((bot, i) => (
-          <motion.div
-            key={bot.name}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            onClick={() => onSelect(bot.name)}
-            className="relative rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-purple-500/40 transition-all duration-300 hover:-translate-y-1"
-          >
-            <img
-              src={bot.image}
-              alt={bot.name}
-              className="h-[320px] w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4">
-              <h3 className="text-lg font-semibold text-white">{bot.name}</h3>
-              <p className="text-sm text-purple-200">{bot.vibe}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </div>
+   <div className="px-4">
+  <div className="hidden sm:grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6">
+    {bots.map((bot, i) => (
+      <motion.div
+        key={bot.name}
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: i * 0.1 }}
+        onClick={() => onSelect(bot.name)}
+        className="relative rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-purple-500/40 transition-all duration-300 hover:-translate-y-1"
+      >
+        <img
+          src={bot.image}
+          alt={bot.name}
+          className="h-[320px] w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4">
+          <h3 className="text-lg font-semibold text-white">{bot.name}</h3>
+          <p className="text-sm text-purple-200">{bot.vibe}</p>
+        </div>
+      </motion.div>
+    ))}
+  </div>
+
+  {/* Mobile Scrollable Row */}
+  <div className="flex sm:hidden gap-4 overflow-x-auto pb-4 scrollbar-hide">
+    {bots.map((bot, i) => (
+      <motion.div
+        key={bot.name}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: i * 0.1 }}
+        onClick={() => onSelect(bot.name)}
+        className="min-w-[220px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-purple-500/40 transition-all duration-300"
+      >
+        <img
+          src={bot.image}
+          alt={bot.name}
+          className="h-[300px] w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4">
+          <h3 className="text-lg font-semibold text-white">{bot.name}</h3>
+          <p className="text-sm text-purple-200">{bot.vibe}</p>
+        </div>
+      </motion.div>
+    ))}
+  </div>
+</div>
+
   );
 
   return (
