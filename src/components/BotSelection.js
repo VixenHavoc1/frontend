@@ -19,8 +19,13 @@ export default function BotSelection({ onSelect }) {
     { name: "Secretary", vibe: "Professional and flirty", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic19.png" },
   ];
 
-  const renderSection = (title, bots) => (
-    <div className="px-4">
+  const renderSection = (title, emoji, bots) => (
+    <section className="px-4 mt-8">
+      {/* Section Heading */}
+      <h2 className="text-xl sm:text-2xl font-semibold mb-4 flex items-center gap-2 text-purple-200 tracking-wide">
+        <span>{emoji}</span> {title}
+      </h2>
+
       {/* Desktop Grid */}
       <div className="hidden sm:grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6">
         {bots.map((bot, i) => (
@@ -30,14 +35,14 @@ export default function BotSelection({ onSelect }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
             onClick={() => onSelect(bot.name)}
-            className="relative rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-purple-500/40 transition-all duration-300 hover:-translate-y-1"
+            className="relative rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-all duration-300 hover:-translate-y-1"
           >
             <img
               src={bot.image}
               alt={bot.name}
               className="h-[320px] w-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-4">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-4">
               <h3 className="text-lg font-semibold text-white">{bot.name}</h3>
               <p className="text-sm text-purple-200">{bot.vibe}</p>
             </div>
@@ -45,10 +50,10 @@ export default function BotSelection({ onSelect }) {
         ))}
       </div>
 
-      {/* Mobile Scrollable Row with fade */}
+      {/* Mobile Scrollable Row */}
       <div className="relative sm:hidden">
-        <div className="absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-[#1a1027] to-transparent pointer-events-none z-10" />
-        <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#1a1027] to-transparent pointer-events-none z-10" />
+        <div className="absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-[#0b0615] to-transparent pointer-events-none z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#0b0615] to-transparent pointer-events-none z-10" />
 
         <div className="flex gap-4 overflow-x-auto pb-4 px-2 scrollbar-hide snap-x snap-mandatory scroll-smooth-x">
           {bots.map((bot, i) => (
@@ -58,7 +63,7 @@ export default function BotSelection({ onSelect }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => onSelect(bot.name)}
-              className="relative min-w-[200px] h-[300px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-purple-500/40 transition-transform duration-300 snap-center"
+              className="relative min-w-[200px] h-[300px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-transform duration-300 snap-center"
             >
               <img
                 src={bot.image}
@@ -66,7 +71,7 @@ export default function BotSelection({ onSelect }) {
                 className="h-full w-full object-cover"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-3">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-3">
                 <h3 className="text-base font-semibold text-white">{bot.name}</h3>
                 <p className="text-xs text-purple-200">{bot.vibe}</p>
               </div>
@@ -74,21 +79,24 @@ export default function BotSelection({ onSelect }) {
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-[#1a1027] to-[#2c1f3d] text-white">
+    <div className="min-h-screen bg-gradient-to-b from-[#05010a] via-[#0f0820] to-[#1a0e2b] text-white">
       {/* Header */}
-      <header className="p-6 text-center bg-gradient-to-r from-[#1f0f2e] via-[#3b1d52] to-[#1f0f2e] shadow-[0_0_20px_rgba(139,92,246,0.3)] border-b border-purple-800/40">
+      <header className="p-6 text-center bg-gradient-to-r from-[#130824] via-[#28164a] to-[#130824] shadow-[0_0_30px_rgba(120,60,255,0.3)] border-b border-purple-800/40">
         <h1 className="text-3xl font-extrabold tracking-wide text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
           Voxella AI
         </h1>
+        <p className="text-sm text-purple-300 mt-1 tracking-wide">
+          Choose your fantasy. Create your connection.
+        </p>
       </header>
 
       {/* Sections */}
-      {renderSection("AI Girlfriend", girlfriends)}
-      {renderSection("Role-play", roleplays)}
+      {renderSection("AI Girlfriends", "💕", girlfriends)}
+      {renderSection("Roleplays", "🎭", roleplays)}
     </div>
   );
 }
