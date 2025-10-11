@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import axios from "axios";
 
-export default function BotSidebar({ onChatOpen }) {
+export default function BotSelection({ onSelect }) {
   const girlfriends = [
     { name: "Lily", vibe: "Submissive • Sweet & Caring", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic10.png" },
     { name: "Raven", vibe: "Teasing • Playful & Bold", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic12.png" },
@@ -21,99 +19,86 @@ export default function BotSidebar({ onChatOpen }) {
     { name: "Secretary", vibe: "Professional and flirty", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic19.png" },
   ];
 
-  const [username, setUsername] = useState("there");
-  const [activeTab, setActiveTab] = useState("Girlfriend");
-  const [selectedBot, setSelectedBot] = useState(null);
+  const renderSection = (title, emoji, bots) => (
+    <section className="px-4 mt-8">
+      {/* Section Heading */}
+      <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 flex justify-center items-center gap-3 text-purple-300 tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+        <span className="text-2xl">{emoji}</span> {title}
+      </h2>
 
-  // Fetch username from backend
-  useEffect(() => {
-    const fetchUsername = async () => {
-      try {
-        const { data } = await axios.get("/api/me"); // replace with your endpoint
-        if (data.username) setUsername(data.username);
-      } catch (err) {
-        console.log("Failed to fetch username", err);
-      }
-    };
-    fetchUsername();
-  }, []);
-
-  const handleBotClick = (botName) => {
-    setSelectedBot(botName);
-    if (onChatOpen) onChatOpen(botName);
-  };
-
-  const tabs = ["Girlfriend", "Roleplay"];
-  const filteredBots = activeTab === "Girlfriend" ? girlfriends : roleplays;
-
-  const renderSection = () => (
-    <div className="flex flex-col gap-6">
-      {/* Mobile + Desktop Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6">
-        {filteredBots.map((bot, i) => (
+      {/* Desktop Grid */}
+      <div className="hidden sm:grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6">
+        {bots.map((bot, i) => (
           <motion.div
             key={bot.name}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            onClick={() => handleBotClick(bot.name)}
-            className="relative w-full h-[300px] rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-transform duration-300 snap-center bot-glow bot-sparkle"
+            transition={{ delay: i * 0.1 }}
+            onClick={() => onSelect(bot.name)}
+            className="relative rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-all duration-300 hover:-translate-y-1 bot-glow bot-sparkle"
           >
-            <img src={bot.image} alt={bot.name} className="h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-3">
+            <img
+              src={bot.image}
+              alt={bot.name}
+              className="h-[320px] w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-4">
               <h3 className="text-lg font-semibold text-white">{bot.name}</h3>
               <p className="text-sm text-purple-200">{bot.vibe}</p>
             </div>
           </motion.div>
         ))}
       </div>
-    </div>
+
+      {/* Mobile Scrollable Row */}
+      <div className="sm:hidden relative">
+        {/* Fade Overlays */}
+        <div className="absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-[#0b0615] to-transparent pointer-events-none z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#0b0615] to-transparent pointer-events-none z-10" />
+
+        <div className="flex gap-4 overflow-x-auto pb-4 px-2 snap-x snap-mandatory scroll-smooth">
+          {bots.map((bot, i) => (
+            <motion.div
+              key={bot.name}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              onClick={() => onSelect(bot.name)}
+              className="relative w-[70vw] sm:w-[200px] h-[300px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-transform duration-300 snap-center bot-glow bot-sparkle"
+            >
+              <img
+                src={bot.image}
+                alt={bot.name}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-3">
+                <h3 className="text-base font-semibold text-white">{bot.name}</h3>
+                <p className="text-xs text-purple-200">{bot.vibe}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 
-  if (selectedBot) {
-    // Chat Window
-    return (
-      <div className="flex-1 bg-[#0a0a0a] p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-2xl font-bold text-white">{selectedBot}</h3>
-          <button
-            onClick={() => setSelectedBot(null)}
-            className="text-purple-300 hover:text-white"
-          >
-            Back
-          </button>
-        </div>
-        <div className="h-[calc(100vh-100px)] bg-[#1a0e2b]/50 rounded-xl p-4 overflow-y-auto">
-          <p className="text-purple-200">Chat with {selectedBot}...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-[#05010a] via-[#0f0820] to-[#1a0e2b] text-white p-4">
-      {/* Greeting */}
-      <h2 className="text-xl font-bold mb-6">Hey {username} 👋</h2>
+    <div className="min-h-screen bg-gradient-to-b from-[#05010a] via-[#0f0820] to-[#1a0e2b] text-white">
+      {/* Header */}
+      <header className="relative p-6 text-center overflow-hidden border-b border-purple-800/40">
+        <div className="absolute inset-0 animate-aurora opacity-70" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#130824]/90 via-[#28164a]/70 to-[#130824]/90" />
+        <div className="relative z-10">
+          <h1 className="text-3xl font-extrabold tracking-wide text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
+            Voxella AI
+          </h1>
+        </div>
+      </header>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors duration-200 ${
-              activeTab === tab
-                ? "bg-purple-600 text-white shadow-lg"
-                : "bg-purple-900/40 text-purple-200 hover:bg-purple-700/60"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Bot Selection */}
-      {renderSection()}
+      {/* Sections */}
+      {renderSection("AI Girlfriends", "💕", girlfriends)}
+      {renderSection("Roleplays", "🎭", roleplays)}
     </div>
   );
 }
