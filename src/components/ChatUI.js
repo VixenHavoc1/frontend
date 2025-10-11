@@ -255,30 +255,16 @@ const handleVerifySubmit = async (e) => {
     setShowPaywall(false);
   };
 
- 
-async function handleTierClick(tierId) {
+ async function handleTierClick(tierId) {
+  const backendUrl = "https://api.voxellaai.site"; // hardcoded URL
   try {
-    // 1️⃣ Check for user authentication
     const accessToken = localStorage.getItem("access_token");
-    if (!accessToken) {
-      console.warn("User not authenticated. Showing login modal.");
-      setShowLogin(true);
-      return;
-    }
+    if (!accessToken) throw new Error("User not authenticated");
 
-    // 2️⃣ Confirm backend URL
-    const backendUrl = import.meta.env.VITE_PAYMENT_BACKEND_URL || PAYMENT_BACKEND_URL;
-    if (!backendUrl) {
-      console.error("Payment backend URL is missing! Check .env file or PAYMENT_BACKEND_URL.");
-      alert("Payment system is not configured correctly. Contact support.");
-      return;
-    }
+    console.log("🟢 [DEBUG] Creating invoice for tier:", tierId);
+    console.log("🟢 [DEBUG] Using backend URL:", backendUrl);
 
-    const endpoint = `${backendUrl}/api/create-invoice`;
-    console.log("🟢 Creating invoice at:", endpoint, "for tier:", tierId);
-
-    // 3️⃣ Make the fetch request
-    const res = await fetch(endpoint, {
+    const res = await fetch(`${backendUrl}/api/create-invoice`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -287,33 +273,29 @@ async function handleTierClick(tierId) {
       body: JSON.stringify({ tier_id: tierId }),
     });
 
-    // 4️⃣ Check network response
     if (!res.ok) {
-      const text = await res.text();
-      console.error(`❌ Network error creating invoice. Status: ${res.status}`, text);
-      alert("Failed to create payment. Check console for details.");
-      return;
+      const errText = await res.text();
+      console.error("❌ [ERROR] Invoice creation failed:", errText);
+      throw new Error(`Failed with status ${res.status}`);
     }
 
     const data = await res.json();
-    console.log("✅ Backend response:", data);
+    console.log("✅ [DEBUG] Invoice created:", data);
 
-    // 5️⃣ Validate payment link
-    if (!data.payment_link) {
-      console.error("❌ No payment_link found in backend response:", data);
-      alert("Payment creation failed. Contact support.");
-      return;
+    if (data.payment_link) {
+      console.log("🟢 [DEBUG] Redirecting to payment link:", data.payment_link);
+      window.location.href = data.payment_link;
+    } else {
+      console.error("❌ [ERROR] No payment_link found in response:", data);
+      alert("Something went wrong. Please try again.");
     }
-
-    // 6️⃣ Redirect to NowPayments
-    console.log("Redirecting to payment link:", data.payment_link);
-    window.location.href = data.payment_link;
 
   } catch (err) {
     console.error("❌ Exception in handleTierClick:", err);
-    alert("An unexpected error occurred. Check console for details.");
+    alert(err.message || "Failed to create payment. Please try again.");
   }
 }
+
 
 // ---- Fetch user email and sync minimal info ----
 // Replace your old fetchUserData and fetchUserEmail with this single function
