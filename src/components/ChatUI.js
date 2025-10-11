@@ -282,13 +282,13 @@ const handleVerifySubmit = async (e) => {
     const data = await res.json();
     console.log("✅ [DEBUG] Invoice created:", data);
 
-    if (data.payment_link) {
-      console.log("🟢 [DEBUG] Redirecting to payment link:", data.payment_link);
-      window.location.href = data.payment_link;
-    } else {
-      console.error("❌ [ERROR] No payment_link found in response:", data);
-      alert("Something went wrong. Please try again.");
-    }
+  if (data.payment_url) {  // <-- use payment_url instead of payment_link
+  console.log("🟢 [DEBUG] Redirecting to payment URL:", data.payment_url);
+  window.location.href = data.payment_url;
+} else {
+  console.error("❌ [ERROR] No payment_url found in response:", data);
+  alert("Something went wrong. Please try again.");
+}
 
   } catch (err) {
     console.error("❌ Exception in handleTierClick:", err);
