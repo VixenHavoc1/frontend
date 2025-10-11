@@ -205,28 +205,31 @@ const handleKeyDown = (e) => {
     return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic14.png";
   };
 
- const handleSignupSubmit = async (e) => {
+const handleSignupSubmit = async (e) => {
   e.preventDefault();
   setError("");
-  try {
-    const res = await apiFetch("/signup", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
 
-    // If API returns error info
-    if (res?.error) {
-      // Check if email already exists / verified
-      if (res.error === "EMAIL_ALREADY_VERIFIED") {
-        setError("Email already registered. Please log in.");
+  try {
+    const data = await signup(email, password);
+
+    // If backend says user is already verified, auto-login
+    if (data?.auto_login && data.user_id) {
+      const loginData = await login(email, password); // automatic login
+      if (loginData?.access_token) {
+        setIsAuthenticated(true);
+        setShowSignup(false);
+        setShowVerify(false); // no need to verify
+        await syncUserData(); // sync name, payment, etc
+        if (!localStorage.getItem("userName")) setShowNameModal(true);
         return;
-      } 
+      }
     }
 
+    // Normal signup flow
     setShowSignup(false);
     setShowVerify(true);
   } catch (err) {
-    console.error("Signup error:", err);
+    console.error(err);
     setError(err.message || "Something went wrong. Please try again.");
   }
 };
