@@ -18,6 +18,26 @@
     --foreground: #ededed;
   }
 }
+/* Subtle sparkle overlay on hover */
+.bot-sparkle::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 40%),
+              radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.6s ease;
+  pointer-events: none;
+}
+
+.bot-sparkle:hover::after {
+  opacity: 1;
+  transform: rotate(15deg);
+}
+
 /* Bot Card Breathing Glow */
 @keyframes glowPulse {
   0% {
