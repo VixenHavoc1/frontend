@@ -18,6 +18,23 @@
     --foreground: #ededed;
   }
 }
+/* Bot Card Breathing Glow */
+@keyframes glowPulse {
+  0% {
+    box-shadow: 0 0 15px rgba(120, 60, 255, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(165, 120, 255, 0.25);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(120, 60, 255, 0.15);
+  }
+}
+
+.bot-glow {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
 /* === Aurora Background Animation === */
 @keyframes auroraMove {
   0% {
