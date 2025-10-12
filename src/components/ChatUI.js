@@ -324,7 +324,7 @@ const syncUserData = async () => {
       // ✅ NEW: sync message count from backend
       if (data.message_count !== undefined) {
         setMessageCount(data.message_count);
-        localStorage.setItem("message_count", data.message_count.toString());
+        localStorage.setItem("message_count", data.free_messages_left.toString());
       }
 
       localStorage.setItem("userId", data.id);
@@ -418,7 +418,7 @@ const sendMessage = async () => {
   setInput("");
   // ✅ Fetch updated count from backend after sending
 const updatedUser = await syncUserData();
-setMessageCount(updatedUser?.message_count || messageCount);
+setMessageCount(updatedUser?.free_messages_left|| messageCount);
 
   setIsTyping(true);
 
