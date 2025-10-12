@@ -22,6 +22,7 @@ export default function ChatUI({ bot }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [messageCount, setMessageCount] = useState(0);
+  const [freeMessagesLeft, setFreeMessagesLeft] = useState(5);
 
   const [showVerify, setShowVerify] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
