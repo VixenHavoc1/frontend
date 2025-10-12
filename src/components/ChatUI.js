@@ -309,7 +309,6 @@ const handleVerifySubmit = async (e) => {
 
 
 // ---- Fetch user email and sync minimal info ----
-// Replace your old fetchUserData and fetchUserEmail with this single function
 const syncUserData = async () => {
   try {
     const headers = await getAuthHeaders();
@@ -321,6 +320,12 @@ const syncUserData = async () => {
       setUserEmail(data.email);
       setUserName(data.display_name || "");
       setHasPaid(data.has_paid || false);
+
+      // ✅ NEW: sync message count from backend
+      if (data.message_count !== undefined) {
+        setMessageCount(data.message_count);
+        localStorage.setItem("message_count", data.message_count.toString());
+      }
 
       localStorage.setItem("userId", data.id);
       localStorage.setItem("userEmail", data.email);
@@ -411,9 +416,9 @@ const sendMessage = async () => {
 
   // Clear input and increment message count
   setInput("");
-  const newCount = messageCount + 1;
-  setMessageCount(newCount);
-  localStorage.setItem("message_count", newCount.toString());
+  // ✅ Fetch updated count from backend after sending
+const updatedUser = await syncUserData();
+setMessageCount(updatedUser?.message_count || messageCount);
 
   setIsTyping(true);
 
