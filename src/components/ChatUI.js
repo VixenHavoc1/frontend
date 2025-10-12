@@ -308,7 +308,6 @@ const handleVerifySubmit = async (e) => {
 }
 
 
-// ---- Fetch user email and sync minimal info ----
 const syncUserData = async () => {
   try {
     const headers = await getAuthHeaders();
@@ -321,10 +320,9 @@ const syncUserData = async () => {
       setUserName(data.display_name || "");
       setHasPaid(data.has_paid || false);
 
-      // ✅ NEW: sync message count from backend
-      if (data.message_count !== undefined) {
-        setMessageCount(data.message_count);
-        localStorage.setItem("message_count", data.free_messages_left.toString());
+      // 🟢 NEW: store free messages left
+      if (typeof data.free_messages_left !== "undefined") {
+        setFreeMessagesLeft(data.free_messages_left);
       }
 
       localStorage.setItem("userId", data.id);
@@ -343,6 +341,7 @@ const syncUserData = async () => {
     return null;
   }
 };
+
 
 
   // Initial load effect
