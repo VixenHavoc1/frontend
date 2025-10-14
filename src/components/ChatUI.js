@@ -92,6 +92,10 @@ const handleBotSelect = (bot) => {
     }
   };
 
+useEffect(() => {
+  const savedFree = localStorage.getItem("free_messages_left");
+  if (savedFree) setFreeMessagesLeft(parseInt(savedFree, 10));
+}, []);
 
 const silentLogout = () => {
     console.log("LOGOUT: Clearing user session data."); // 🐛 Debug log
@@ -321,11 +325,11 @@ const syncUserData = async () => {
       setUserName(data.display_name || "");
       setHasPaid(data.has_paid || false);
 
-      // 🟢 NEW: store free messages left
-     useEffect(() => {
-  const savedFree = localStorage.getItem("free_messages_left");
-  if (savedFree) setFreeMessagesLeft(parseInt(savedFree, 10));
-}, []);
+      // ✅ Just update free messages directly
+      if (typeof data.free_messages_left !== "undefined") {
+        setFreeMessagesLeft(data.free_messages_left);
+        localStorage.setItem("free_messages_left", data.free_messages_left);
+      }
 
       localStorage.setItem("userId", data.id);
       localStorage.setItem("userEmail", data.email);
