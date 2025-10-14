@@ -322,9 +322,10 @@ const syncUserData = async () => {
       setHasPaid(data.has_paid || false);
 
       // 🟢 NEW: store free messages left
-      if (typeof data.free_messages_left !== "undefined") {
-        setFreeMessagesLeft(data.free_messages_left);
-      }
+     useEffect(() => {
+  const savedFree = localStorage.getItem("free_messages_left");
+  if (savedFree) setFreeMessagesLeft(parseInt(savedFree, 10));
+}, []);
 
       localStorage.setItem("userId", data.id);
       localStorage.setItem("userEmail", data.email);
@@ -401,11 +402,11 @@ const sendMessage = async () => {
   }
 
   // Free message limit check
-  if (!hasPaid && messageCount >= 5) {
-    console.log("SEND: Free message limit reached. Showing paywall.");
-    setShowPaywall(true);
-    return;
-  }
+ if (!hasPaid && freeMessagesLeft <= 0) {
+  console.log("🚨 [DEBUG] Triggering paywall modal (free limit reached)");
+  setShowPaywall(true);
+  return;
+}
 
   const currentUserId = userId;
   const currentUserName = userName || "baby";
@@ -418,7 +419,10 @@ const sendMessage = async () => {
   setInput("");
   // ✅ Fetch updated count from backend after sending
 const updatedUser = await syncUserData();
-setMessageCount(updatedUser?.free_messages_left|| messageCount);
+if (updatedUser && typeof updatedUser.free_messages_left !== "undefined") {
+  setFreeMessagesLeft(updatedUser.free_messages_left);
+  console.log("🧮 [DEBUG] Updated free messages left:", updatedUser.free_messages_left);
+}
 
   setIsTyping(true);
 
