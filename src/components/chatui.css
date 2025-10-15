@@ -1,0 +1,28 @@
+/* chatui.css */
+body {
+  background: linear-gradient(180deg, #000000 0%, #2c004b 100%);
+  font-family: "Poppins", "Inter", sans-serif;
+  letter-spacing: 0.4px;
+}
+
+.glass-card {
+  background: rgba(31, 27, 41, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(150, 80, 255, 0.3);
+  box-shadow: 0 0 20px rgba(150, 80, 255, 0.2);
+}
+
+.glow-hover:hover {
+  box-shadow: 0 0 10px rgba(170, 100, 255, 0.6);
+}
+
+.message-bubble {
+  background: linear-gradient(145deg, #3a2a4d, #2a1e3b);
+  transition: 0.3s ease;
+}
+.message-bubble.user {
+  background: linear-gradient(145deg, #5A2D8C, #7438b0);
+}
+.message-bubble:hover {
+  box-shadow: 0 0 8px rgba(160, 90, 255, 0.4);
+}
