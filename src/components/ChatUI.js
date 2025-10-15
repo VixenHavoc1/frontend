@@ -390,20 +390,48 @@ const syncUserData = async () => {
 const handleLoginSubmit = async (e) => {
   e.preventDefault();
   setError("");
-  try {
-    const loginData = await login(email, password);
-    if (!loginData.access_token) throw new Error("Login failed");
 
+  try {
+    const res = await fetch(`${CHAT_BACKEND_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    // Handle non-200 responses
+    if (!res.ok) {
+      if (res.status === 401) {
+        setError("Incorrect email or password.");
+      } else if (res.status === 404) {
+        setError("User not found. Please sign up first.");
+      } else {
+        setError(data.detail || "Something went wrong. Please try again.");
+      }
+      return;
+    }
+
+    // Expect tokens
+    if (!data.access_token) {
+      throw new Error("Login failed — missing token");
+    }
+
+    // Save tokens + auth state
+    localStorage.setItem("access_token", data.access_token);
+    localStorage.setItem("refresh_token", data.refresh_token || "");
     setIsAuthenticated(true);
     setShowLogin(false);
 
     const userData = await syncUserData();
     if (userData && !userData.display_name) setShowNameModal(true);
+
   } catch (err) {
-    console.error(err);
-    setError(err.message || "Login failed");
+    console.error("Login error:", err);
+    setError("Incorrect email or password."); // fallback
   }
 };
+
   // Empty dependency array means it runs only once on mount
 const sendMessage = async () => {
   console.log("SEND: Message initiated.");
