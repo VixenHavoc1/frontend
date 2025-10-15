@@ -5,6 +5,7 @@ import AudioWave from "./AudioWave";
 import PremiumModal from './PremiumModal';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient'
+import "./chatui.css";
 import { apiFetch, login, signup, verifyEmail, fetchMe, sendMessage, logout } from "../api";
 export default function ChatUI({ bot }) {
   const [messages, setMessages] = useState([]);
