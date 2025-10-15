@@ -561,8 +561,9 @@ const body = {
 };
 
   return (
-    <div className="flex flex-col h-screen bg-[#2C1F3D] text-white">
-      <div className="bg-[#1F1B29] p-4 shadow-lg flex justify-between items-center">
+    <div className="flex flex-col h-screen text-white bg-gradient-to-b from-black via-[#190020] to-[#2C1F3D]">
+  <div className="glass-card p-4 flex justify-between items-center rounded-b-2xl">
+
         <h1 className="text-2xl font-bold text-white text-center sm:text-lg md:text-xl">VOXELLA AI</h1>
         {!isAuthenticated && (
           <div className="flex gap-4">
@@ -585,8 +586,8 @@ const body = {
             {msg.sender === "bot" && (
              <img src={getBotPic(selectedBot?.name || bot?.name)} alt="Bot" className="w-10 h-10 rounded-full mr-3" />  
             )}
-            <div className={`max-w-[70%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] px-4 py-3 rounded-2xl text-base whitespace-pre-wrap leading-relaxed relative ${msg.sender === "user" ? "bg-[#5A2D8C]" : "bg-[#3A2A4D]"}`}>
-              {msg.text}
+           className={`max-w-[70%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] px-4 py-3 rounded-2xl text-base whitespace-pre-wrap leading-relaxed relative message-bubble ${msg.sender === "user" ? "user self-end" : ""}`}
+
               {msg.audio && <AudioWave url={msg.audio} />}
               {msg.image && <img src={msg.image} alt="NSFW" className="mt-2 w-full rounded-lg" />}
             </div>
@@ -653,7 +654,7 @@ const body = {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="bg-[#1F1B29]/90 rounded-2xl p-8 shadow-2xl max-w-md w-full text-white relative border border-[#5A2D8C]/40"
+            className="glass-card rounded-2xl p-8 max-w-md w-full text-white relative"
           >
             <h2 className="text-3xl font-bold text-center mb-6">Log In</h2>
 
