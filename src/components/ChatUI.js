@@ -231,27 +231,45 @@ const handleSignupSubmit = async (e) => {
   try {
     const data = await signup(email, password);
 
-    // If backend says user is already verified, auto-login
-    if (data?.auto_login && data.user_id) {
-      const loginData = await login(email, password); // automatic login
+    // 🟡 Case 1: Already verified but wrong password
+    if (data?.already_verified && data?.error === "invalid_password") {
+      setError("Email already verified but incorrect password.");
+      return; // stop here, no verify modal
+    }
+
+    // 🟢 Case 2: Already verified & auto-login allowed
+    if (data?.already_verified && data?.auto_login && data?.user_id) {
+      // Directly log the user in
+      const loginData = await login(email, password);
       if (loginData?.access_token) {
+        localStorage.setItem("access_token", loginData.access_token);
+        if (loginData.refresh_token)
+          localStorage.setItem("refresh_token", loginData.refresh_token);
+
         setIsAuthenticated(true);
         setShowSignup(false);
-        setShowVerify(false); // no need to verify
-        await syncUserData(); // sync name, payment, etc
-        if (!localStorage.getItem("userName")) setShowNameModal(true);
+        setShowVerify(false);
+
+        const userData = await syncUserData();
+        if (userData && !userData.display_name) setShowNameModal(true);
         return;
       }
     }
 
-    // Normal signup flow
+    // 🧩 Case 3: Normal signup (new or unverified user)
     setShowSignup(false);
     setShowVerify(true);
+
   } catch (err) {
-    console.error(err);
-    setError(err.message || "Something went wrong. Please try again.");
+    console.error("Signup error:", err);
+    if (err.message?.includes("already verified")) {
+      setError("Email already verified but incorrect password.");
+    } else {
+      setError(err.message || "Something went wrong. Please try again.");
+    }
   }
 };
+
 
 const handleVerifySubmit = async (e) => {
   e.preventDefault();
