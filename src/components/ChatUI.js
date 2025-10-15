@@ -46,14 +46,7 @@ const [hasPaid, setHasPaid] = useState(localStorage.getItem("hasPaid") === 'true
   const token = localStorage.getItem("access_token");
   return token ? { access_token: token } : null;
 };
-const handleBotSelect = (bot) => {
-  setSelectedBot(bot);
 
-  // Only show age modal if not verified
-  if (!localStorage.getItem("age_verified")) {
-    setShowAgeModal(true);
-  }
-};
 
   
   useEffect(() => {
@@ -71,6 +64,16 @@ const handleBotSelect = (bot) => {
     }
   }, []);
 
+useEffect(() => {
+  const savedBot = localStorage.getItem("selectedBot");
+  if (savedBot) {
+    try {
+      setSelectedBot(JSON.parse(savedBot)); // ✅ Restore bot from localStorage
+    } catch (err) {
+      console.error("Failed to parse saved bot:", err);
+    }
+  }
+}, []);
 
  useEffect(() => {
   const shown = localStorage.getItem("premium_modal_shown");
@@ -79,6 +82,17 @@ const handleBotSelect = (bot) => {
     localStorage.setItem("premium_modal_shown", "true");
   }
 }, [hasPaid]);
+
+  const handleBotSelect = (bot) => {
+  setSelectedBot(bot);
+  localStorage.setItem("selectedBot", JSON.stringify(bot)); // ✅ Save selection
+
+  // Only show age modal if not verified
+  if (!localStorage.getItem("age_verified")) {
+    setShowAgeModal(true);
+  }
+};
+
 
   const fetchBlobMedia = async (url) => {
     try {
@@ -437,12 +451,15 @@ if (updatedUser && typeof updatedUser.free_messages_left !== "undefined") {
       throw new Error("Authorization failed. Please log in again.");
     }
 
-    const body = {
-      message: userMessage.text,
-      bot_name: bot?.name || "Default",
-      user_id: currentUserId,
-      user_name: currentUserName,
-    };
+   const activeBot = bot?.name || selectedBot?.name || "Default";
+
+const body = {
+  message: userMessage.text,
+  bot_name: activeBot,
+  user_id: currentUserId,
+  user_name: currentUserName,
+};
+
 
     console.log("SEND: Sending message to API with body:", body);
 
