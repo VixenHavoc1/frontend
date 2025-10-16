@@ -588,35 +588,55 @@ const body = {
             Your sexy AI companion ready to chat 💖
           </p>
         </div>
+{/* Messages */}
+<div className="flex flex-col w-full">
+  {messages.map((msg, index) => (
+    <motion.div
+      key={index}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.05 }}
+      className={`flex items-end mb-4 w-full ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+    >
+      {/* Bot avatar */}
+      {msg.sender === "bot" && (
+        <img
+          src={getBotPic(selectedBot?.name || bot?.name)}
+          alt="Bot"
+          className="w-10 h-10 rounded-full mr-3"
+        />
+      )}
 
-        {/* Messages */}
-        {messages.map((msg, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
-            className={`flex items-end mb-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
-          >
-            {msg.sender === "bot" && (
-              <img src={getBotPic(selectedBot?.name || bot?.name)} alt="Bot" className="w-10 h-10 rounded-full mr-3" />
-            )}
-            <div className={`max-w-[70%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] px-4 py-3 rounded-2xl text-base whitespace-pre-wrap leading-relaxed relative message-bubble ${msg.sender === "user" ? "user self-end" : ""}`}>
-              {msg.text}
-              {msg.audio && <AudioWave url={msg.audio} />}
-              {msg.image && <img src={msg.image} alt="NSFW" className="mt-2 w-full rounded-lg" />}
-            </div>
-          </motion.div>
-        ))}
-
-        {isTyping && (
-          <motion.div className="flex justify-start mb-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ repeat: Infinity, repeatType: "reverse", duration: 0.6 }}>
-            <div className="px-4 py-2 bg-[#3A2A4D] rounded-2xl text-sm">{(selectedBot?.name || bot?.name)} is typing...</div>
-          </motion.div>
-        )}
-        <div ref={chatEndRef} />
+      {/* Message bubble */}
+      <div
+        className={`
+          max-w-[70%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] px-4 py-3 rounded-2xl text-base whitespace-pre-wrap leading-relaxed relative
+          ${msg.sender === "user" ? "bg-gradient-to-r from-[#ff5fa3] to-[#A259FF] text-white rounded-br-none" : "bg-gray-800 text-gray-100 rounded-bl-none"}
+        `}
+      >
+        {msg.text}
+        {msg.audio && <AudioWave url={msg.audio} />}
+        {msg.image && <img src={msg.image} alt="NSFW" className="mt-2 w-full rounded-lg" />}
       </div>
-    </div>
+    </motion.div>
+  ))}
+
+  {isTyping && (
+    <motion.div
+      className="flex justify-start mb-2 w-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ repeat: Infinity, repeatType: "reverse", duration: 0.6 }}
+    >
+      <div className="px-4 py-2 bg-gray-700 text-gray-100 rounded-2xl text-sm">
+        {(selectedBot?.name || bot?.name)} is typing...
+      </div>
+    </motion.div>
+  )}
+
+  <div ref={chatEndRef} />
+</div>
+
 
     {/* Input Box */}
     <div className="flex p-4 bg-[#1F1B29]">
