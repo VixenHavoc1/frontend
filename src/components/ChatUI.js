@@ -560,287 +560,216 @@ const body = {
   }
 };
 
-  return (
-    <div className="flex flex-col h-screen text-white bg-gradient-to-b from-black via-[#190020] to-[#2C1F3D]">
-  <div className="glass-card p-4 flex justify-between items-center rounded-b-2xl">
-
-        <h1 className="text-2xl font-bold text-white text-center sm:text-lg md:text-xl">VOXELLA AI</h1>
-        {!isAuthenticated && (
-          <div className="flex gap-4">
-            <button onClick={() => setShowSignup(true)} className="bg-[#5A2D8C] px-4 py-2 rounded-lg hover:bg-[#6B3B98] transition-all duration-300">Sign Up</button>
-            <button onClick={() => setShowLogin(true)} className="bg-[#5A2D8C] px-4 py-2 rounded-lg hover:bg-[#6B3B98] transition-all duration-300">Log In</button>
-          </div>
-        )}
-      </div>
-<div className="flex-1 overflow-y-auto p-4 relative">
-  <div className="flex flex-col items-center">
-    {/* Centered Bot Header */}
-    <div className="flex flex-col items-center mb-6">
-      <img
-        src={getBotPic(selectedBot?.name || bot?.name)}
-        alt="Bot"
-        className="w-16 h-16 rounded-full border-2 border-white shadow-lg mb-2"
-      />
-      <h2 className="text-lg font-bold">{selectedBot?.name || bot?.name}</h2>
-      <p className="text-sm text-gray-300 text-center max-w-xs">
-        Your sexy AI companion ready to chat 💖
-      </p>
+ return (
+  <div className="flex flex-col h-screen text-white rich-gradient-bg">
+    {/* Header */}
+    <div className="glass-card p-4 flex justify-between items-center rounded-b-2xl">
+      <h1 className="text-2xl font-bold text-white text-center sm:text-lg md:text-xl">VOXELLA AI</h1>
+      {!isAuthenticated && (
+        <div className="flex gap-4">
+          <button onClick={() => setShowSignup(true)} className="premium-btn">Sign Up</button>
+          <button onClick={() => setShowLogin(true)} className="premium-btn">Log In</button>
+        </div>
+      )}
     </div>
 
-    {/* Chat Messages */}
-    {messages.map((msg, index) => (
-      <motion.div
-        key={index}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: index * 0.05 }}
-        className={`flex items-end mb-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
-      >
-        {msg.sender === "bot" && (
-          <img src={getBotPic(selectedBot?.name || bot?.name)} alt="Bot" className="w-10 h-10 rounded-full mr-3" />  
-        )}
-        <div className={`max-w-[70%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] px-4 py-3 rounded-2xl text-base whitespace-pre-wrap leading-relaxed relative message-bubble ${msg.sender === "user" ? "user self-end" : ""}`}>
-          {msg.text}
-          {msg.audio && <AudioWave url={msg.audio} />}
-          {msg.image && <img src={msg.image} alt="NSFW" className="mt-2 w-full rounded-lg" />}
+    {/* Chat Area */}
+    <div className="flex-1 overflow-y-auto p-4 relative">
+      <div className="flex flex-col items-center">
+        {/* Bot Header */}
+        <div className="flex flex-col items-center mb-6">
+          <img
+            src={getBotPic(selectedBot?.name || bot?.name)}
+            alt="Bot"
+            className="w-16 h-16 rounded-full border-2 border-white shadow-lg mb-2"
+          />
+          <h2 className="text-lg font-bold">{selectedBot?.name || bot?.name}</h2>
+          <p className="text-sm text-gray-300 text-center max-w-xs">
+            Your sexy AI companion ready to chat 💖
+          </p>
         </div>
-      </motion.div>
-    ))}
 
-    {isTyping && (
-      <motion.div className="flex justify-start mb-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ repeat: Infinity, repeatType: "reverse", duration: 0.6 }}>
-        <div className="px-4 py-2 bg-[#3A2A4D] rounded-2xl text-sm">{(selectedBot?.name || bot?.name )} is typing...</div>
-      </motion.div>
+        {/* Messages */}
+        {messages.map((msg, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+            className={`flex items-end mb-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+          >
+            {msg.sender === "bot" && (
+              <img src={getBotPic(selectedBot?.name || bot?.name)} alt="Bot" className="w-10 h-10 rounded-full mr-3" />
+            )}
+            <div className={`max-w-[70%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] px-4 py-3 rounded-2xl text-base whitespace-pre-wrap leading-relaxed relative message-bubble ${msg.sender === "user" ? "user self-end" : ""}`}>
+              {msg.text}
+              {msg.audio && <AudioWave url={msg.audio} />}
+              {msg.image && <img src={msg.image} alt="NSFW" className="mt-2 w-full rounded-lg" />}
+            </div>
+          </motion.div>
+        ))}
+
+        {isTyping && (
+          <motion.div className="flex justify-start mb-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ repeat: Infinity, repeatType: "reverse", duration: 0.6 }}>
+            <div className="px-4 py-2 bg-[#3A2A4D] rounded-2xl text-sm">{(selectedBot?.name || bot?.name)} is typing...</div>
+          </motion.div>
+        )}
+        <div ref={chatEndRef} />
+      </div>
+    </div>
+
+    {/* Input Box */}
+    <div className="flex p-4 bg-[#1F1B29]">
+      <textarea
+        ref={inputRef}
+        value={input}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        rows={1}
+        className="flex-1 glass-input min-h-[40px] max-h-[200px] overflow-y-auto resize-none"
+        placeholder="Type a message..."
+      />
+      <button onClick={sendMessage} className="ml-2 premium-btn">Send</button>
+    </div>
+
+    {/* Paywall Modal */}
+    {showPaywall && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+          className="glass-modal p-8 max-w-md w-full text-white text-center"
+        >
+          <h2 className="text-3xl font-bold mb-6">Unlock Premium Access</h2>
+          <div className="space-y-4">
+            <button onClick={() => handleTierClick("tier1")} className="premium-btn w-full text-lg">Unlock for $5 (One-Time)</button>
+            <button onClick={() => handleTierClick("tier2")} className="premium-btn w-full text-lg">Unlock for $10 (One Week)</button>
+            <button onClick={() => handleTierClick("tier3")} className="premium-btn w-full text-lg">Unlock for $20 (One Month)</button>
+          </div>
+        </motion.div>
+      </div>
     )}
 
-    <div ref={chatEndRef} />
-  </div>
-</div>
-
-
-      {/* Input Box */}
-      <div className="flex p-4 bg-[#1F1B29]">
-        <textarea
-          ref={inputRef}
-          value={input}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          rows={1}
-          className="flex-1 p-2 bg-[#3A2A4D] text-white rounded-lg outline-none resize-none min-h-[40px] max-h-[200px] overflow-y-auto"
-          placeholder="Type a message..."
-        />
-        <button
-          onClick={sendMessage}
-          className="ml-2 bg-[#333333] px-4 py-2 rounded-lg hover:bg-[#444444] transition-all duration-300"
+    {/* Login Modal */}
+    {showLogin && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+          className="glass-modal p-8 max-w-md w-full text-white relative"
         >
-          Send
-        </button>
-            
+          <h2 className="text-3xl font-bold text-center mb-6">Log In</h2>
+          <form onSubmit={handleLoginSubmit}>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required className="glass-input w-full mb-4" />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" required className="glass-input w-full mb-4" />
+            <button type="submit" className="premium-btn w-full">Log In</button>
+            {error && <div className="mt-4 text-center text-red-500">{error}</div>}
+          </form>
+          <div className="absolute top-4 right-4 cursor-pointer cancel-btn" onClick={() => setShowLogin(false)}>✕</div>
+        </motion.div>
       </div>
+    )}
 
-      {/* Paywall Modal */}
-      {/* Paywall Modal */}
-      {showPaywall && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="bg-[#1F1B29]/90 rounded-2xl p-8 shadow-2xl max-w-md w-full text-white relative border border-[#5A2D8C]/40"
-          >
-            <h2 className="text-3xl font-bold text-center mb-6">Unlock Premium Access</h2>
-            <div className="space-y-4">
-              <button onClick={() => handleTierClick("tier1")} className="block w-full text-center text-lg bg-[#5A2D8C] px-4 py-2 rounded-lg hover:bg-[#6B3B98]">
-                Unlock for $5 (One-Time)
-              </button>
-              <button onClick={() => handleTierClick("tier2")} className="block w-full text-center text-lg bg-[#5A2D8C] px-4 py-2 rounded-lg hover:bg-[#6B3B98]">
-                Unlock for $10 (One Week)
-              </button>
-              <button onClick={() => handleTierClick("tier3")} className="block w-full text-center text-lg bg-[#5A2D8C] px-4 py-2 rounded-lg hover:bg-[#6B3B98]">
-                Unlock for $20 (One Month)
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Login Modal */}
-      {showLogin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="glass-card rounded-2xl p-8 max-w-md w-full text-white relative"
-          >
-            <h2 className="text-3xl font-bold text-center mb-6">Log In</h2>
-
-            <form onSubmit={handleLoginSubmit}>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-                required
-                className="w-full p-3 mb-4 bg-[#3A2A4D] text-white rounded-lg"
-              />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
-                required
-                className="w-full p-3 mb-4 bg-[#3A2A4D] text-white rounded-lg"
-              />
-              <button type="submit" className="w-full bg-[#5A2D8C] text-white px-4 py-2 rounded-lg hover:bg-[#6B3B98]">Log In</button>
-              {error && <div className="mt-4 text-center text-red-500">{error}</div>}
-            </form>
-
-            <div className="absolute top-4 right-4 cursor-pointer" onClick={() => setShowLogin(false)}>
-              <span className="text-lg font-bold text-[#999]">X</span>
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Sign Up Modal */}
-      {showSignup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            className="bg-[#1F1B29]/90 rounded-2xl p-8 shadow-2xl max-w-md w-full text-white relative border border-[#5A2D8C]/40"
-          >
-            <h2 className="text-3xl font-bold text-center mb-6">Sign Up</h2>
-
-            <form onSubmit={handleSignupSubmit}>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-                required
-                className="w-full p-3 mb-4 bg-[#3A2A4D] text-white rounded-lg"
-              />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
-                required
-                className="w-full p-3 mb-4 bg-[#3A2A4D] text-white rounded-lg"
-              />
-              <button type="submit" className="w-full bg-[#5A2D8C] text-white px-4 py-2 rounded-lg hover:bg-[#6B3B98]">Sign Up</button>
-              {error && <div className="mt-4 text-center text-red-500">{error}</div>}
-            </form>
-
-            <div className="absolute top-4 right-4 cursor-pointer" onClick={() => setShowSignup(false)}>
-              <span className="text-lg font-bold text-[#999]">X</span>
-            </div>
-          </motion.div>
-        </div>
-      )}
-
-        {/* Verify Email Modal */}
-{showVerify && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="bg-[#1F1B29]/90 rounded-2xl p-8 shadow-2xl max-w-md w-full text-white relative border border-[#5A2D8C]/40"
-    >
-      <h2 className="text-3xl font-bold text-center mb-6">Verify Email</h2>
-      <form onSubmit={handleVerifySubmit}>
-        <input
-          type="text"
-          value={verifyCode}
-          onChange={(e) => setVerifyCode(e.target.value)}
-          placeholder="Enter 6-digit code"
-          required
-          className="w-full p-3 mb-4 bg-[#3A2A4D] text-white rounded-lg"
-        />
-        <button
-          type="submit"
-          className="w-full bg-[#5A2D8C] text-white px-4 py-2 rounded-lg hover:bg-[#6B3B98]"
+    {/* Sign Up Modal */}
+    {showSignup && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+          className="glass-modal p-8 max-w-md w-full text-white relative"
         >
-          Verify
-        </button>
-        {error && <div className="mt-4 text-center text-red-500">{error}</div>}
-      </form>
-
-      <div className="absolute top-4 right-4 cursor-pointer" onClick={() => setShowVerify(false)}>
-        <span className="text-lg font-bold text-[#999]">X</span>
+          <h2 className="text-3xl font-bold text-center mb-6">Sign Up</h2>
+          <form onSubmit={handleSignupSubmit}>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required className="glass-input w-full mb-4" />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" required className="glass-input w-full mb-4" />
+            <button type="submit" className="premium-btn w-full">Sign Up</button>
+            {error && <div className="mt-4 text-center text-red-500">{error}</div>}
+          </form>
+          <div className="absolute top-4 right-4 cursor-pointer cancel-btn" onClick={() => setShowSignup(false)}>✕</div>
+        </motion.div>
       </div>
-    </motion.div>
-  </div>
-)}
-{showPremiumUnlocked && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="bg-[#1F1B29]/90 rounded-2xl p-8 shadow-2xl max-w-md w-full text-white relative border border-[#5A2D8C]/40 text-center"
-    >
-      <h2 className="text-3xl font-bold mb-4">🎉 Premium Unlocked!</h2>
-      <p className="text-lg mb-6">Enjoy unlimited access with your new tier 🚀</p>
-      <button
-        onClick={() => setShowPremiumUnlocked(false)}
-        className="bg-[#5A2D8C] px-6 py-2 rounded-lg hover:bg-[#6B3B98] transition-all duration-300"
-      >
-        Continue
-      </button>
-    </motion.div>
-  </div>
-)}
-{showAgeModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
-    <motion.div
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="bg-[#1F1B29]/90 rounded-2xl p-8 max-w-md w-full text-white text-center border border-[#5A2D8C]/40"
-    >
-      <h2 className="text-2xl font-bold mb-4">Age Verification</h2>
-      <p className="mb-6">
-        You must be 18+ to use this AI chatbot. All interactions are fictional.
-      </p>
-      <button
-        onClick={() => {
-          localStorage.setItem("age_verified", "true");
-          setShowAgeModal(false);
-        }}
-        className="bg-[#5A2D8C] px-6 py-2 rounded-lg hover:bg-[#6B3B98] transition-all duration-300"
-      >
-        I’m 18+ and understand
-      </button>
-    </motion.div>
-  </div>
-)}
-{showNameModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-    <div className="bg-[#1F1B29] p-8 rounded-2xl text-white w-[90%] max-w-sm text-center">
-      <h2 className="text-2xl font-bold mb-4">Hey sweetheart! 🥰✨</h2>
-      <p className="mb-4">What should I call you?</p>
-      <input
-        type="text"
-        value={userName}
-        onChange={(e) => setUserName(e.target.value)}
-        className="w-full p-2 mb-4 rounded-lg bg-[#3A2A4D] text-white outline-none"
-        placeholder="Enter your name..."
-      />
-      <button
-        onClick={handleNameConfirm}
-        className="bg-[#ff69b4] px-6 py-2 rounded-lg hover:bg-pink-500 transition-all duration-300"
-      >
-        Confirm
-      </button>
-    </div>
-  </div>
-)}
+    )}
 
-    </div>
-  );
-}
+    {/* Verify Email Modal */}
+    {showVerify && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+          className="glass-modal p-8 max-w-md w-full text-white relative text-center"
+        >
+          <h2 className="text-3xl font-bold mb-6">Verify Email</h2>
+          <form onSubmit={handleVerifySubmit}>
+            <input type="text" value={verifyCode} onChange={(e) => setVerifyCode(e.target.value)} placeholder="Enter 6-digit code" required className="glass-input w-full mb-4" />
+            <button type="submit" className="premium-btn w-full">Verify</button>
+            {error && <div className="mt-4 text-center text-red-500">{error}</div>}
+          </form>
+          <div className="absolute top-4 right-4 cursor-pointer cancel-btn" onClick={() => setShowVerify(false)}>✕</div>
+        </motion.div>
+      </div>
+    )}
+
+    {/* Premium Unlocked Modal */}
+    {showPremiumUnlocked && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+          className="glass-modal p-8 max-w-md w-full text-white text-center"
+        >
+          <h2 className="text-3xl font-bold mb-4">🎉 Premium Unlocked!</h2>
+          <p className="text-lg mb-6">Enjoy unlimited access with your new tier 🚀</p>
+          <button onClick={() => setShowPremiumUnlocked(false)} className="premium-btn">Continue</button>
+        </motion.div>
+      </div>
+    )}
+
+    {/* Age Verification Modal */}
+    {showAgeModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+          className="glass-modal p-8 max-w-md w-full text-white text-center"
+        >
+          <h2 className="text-2xl font-bold mb-4">Age Verification</h2>
+          <p className="mb-6">You must be 18+ to use this AI chatbot. All interactions are fictional.</p>
+          <button
+            onClick={() => {
+              localStorage.setItem("age_verified", "true");
+              setShowAgeModal(false);
+            }}
+            className="premium-btn"
+          >
+            I’m 18+ and understand
+          </button>
+        </motion.div>
+      </div>
+    )}
+
+    {/* Name Modal */}
+    {showNameModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+          className="glass-modal p-8 max-w-sm w-full text-center"
+        >
+          <h2 className="text-2xl font-bold mb-4">Hey sweetheart! 🥰✨</h2>
+          <p className="mb-4">What should I call you?</p>
+          <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Enter your name..." className="glass-input w-full mb-4" />
+          <button onClick={handleNameConfirm} className="bg-gradient-to-r from-[#ff5fa3] to-[#A259FF] px-6 py-2 rounded-xl hover:scale-[1.05] transition-all duration-300">
+            Confirm
+          </button>
+        </motion.div>
+      </div>
+    )}
+  </div>
+);
