@@ -575,7 +575,8 @@ const body = {
 
     {/* Chat Area */}
     <div className="flex-1 overflow-y-auto p-4 relative">
-      <div className="flex flex-col items-center">
+    <div className="flex flex-col w-full">
+
         {/* Bot Header */}
         <div className="flex flex-col items-center mb-6">
           <img
@@ -596,7 +597,8 @@ const body = {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.05 }}
-            className={`flex items-end mb-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+            className={`flex items-end mb-4 w-full ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+
           >
             {msg.sender === "bot" && (
               <img src={getBotPic(selectedBot?.name || bot?.name)} alt="Bot" className="w-10 h-10 rounded-full mr-3" />
