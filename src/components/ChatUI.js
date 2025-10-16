@@ -560,9 +560,8 @@ const body = {
   }
 };
 
-return (
+ return (
   <div className="flex flex-col h-screen text-white rich-gradient-bg">
-
     {/* Header */}
     <div className="glass-card p-4 flex justify-between items-center rounded-b-2xl">
       <h1 className="text-2xl font-bold text-white text-center sm:text-lg md:text-xl">VOXELLA AI</h1>
@@ -577,7 +576,6 @@ return (
     {/* Chat Area */}
     <div className="flex-1 overflow-y-auto p-4 relative">
       <div className="flex flex-col items-center">
-
         {/* Bot Header */}
         <div className="flex flex-col items-center mb-6">
           <img
@@ -592,70 +590,31 @@ return (
         </div>
 
         {/* Messages */}
-        <div className="flex flex-col w-full items-start">
-          {messages.map((msg, index) => {
-            const isUser = msg.sender === "user";
-            const botPic = getBotPic(selectedBot?.name || bot?.name);
+        {messages.map((msg, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+            className={`flex items-end mb-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+          >
+            {msg.sender === "bot" && (
+              <img src={getBotPic(selectedBot?.name || bot?.name)} alt="Bot" className="w-10 h-10 rounded-full mr-3" />
+            )}
+            <div className={`max-w-[70%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] px-4 py-3 rounded-2xl text-base whitespace-pre-wrap leading-relaxed relative message-bubble ${msg.sender === "user" ? "user self-end" : ""}`}>
+              {msg.text}
+              {msg.audio && <AudioWave url={msg.audio} />}
+              {msg.image && <img src={msg.image} alt="NSFW" className="mt-2 w-full rounded-lg" />}
+            </div>
+          </motion.div>
+        ))}
 
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className={`flex w-full mb-3 ${isUser ? "justify-end" : "justify-start"}`}
-              >
-                {!isUser && (
-                  <img
-                    src={botPic}
-                    alt="Bot"
-                    className="w-10 h-10 rounded-full mr-3 self-end flex-shrink-0"
-                  />
-                )}
-
-                <div
-                  className={`
-                    max-w-[70%] sm:max-w-[80%] px-5 py-3 text-base break-words leading-relaxed
-                    relative shadow-xl
-                    ${isUser
-                      ? "bg-gradient-to-r from-purple-900 to-purple-700 text-white rounded-tr-xl rounded-bl-2xl rounded-tl-2xl rounded-br-none text-shadow"
-                      : "bg-gray-850 text-gray-100 rounded-tl-xl rounded-br-2xl rounded-tr-2xl rounded-bl-none text-shadow"
-                    }
-                  `}
-                >
-                  {msg.text}
-                  {msg.audio && <AudioWave url={msg.audio} />}
-                  {msg.image && (
-                    <img src={msg.image} alt="NSFW" className="mt-2 w-full rounded-xl" />
-                  )}
-                </div>
-
-                {isUser && (
-                  <img
-                    src="/path-to-user-avatar.png"
-                    alt="You"
-                    className="w-10 h-10 rounded-full ml-3 self-end flex-shrink-0"
-                  />
-                )}
-              </motion.div>
-            );
-          })}
-
-          {isTyping && (
-            <motion.div
-              className="flex w-full justify-start mb-3"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ repeat: Infinity, repeatType: "reverse", duration: 0.6 }}
-            >
-              <div className="px-4 py-2 bg-[#3A2A4D] rounded-2xl text-sm shadow-md">
-                {(selectedBot?.name || bot?.name)} is typing...
-              </div>
-            </motion.div>
-          )}
-
-          <div ref={chatEndRef} />
-        </div>
+        {isTyping && (
+          <motion.div className="flex justify-start mb-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ repeat: Infinity, repeatType: "reverse", duration: 0.6 }}>
+            <div className="px-4 py-2 bg-[#3A2A4D] rounded-2xl text-sm">{(selectedBot?.name || bot?.name)} is typing...</div>
+          </motion.div>
+        )}
+        <div ref={chatEndRef} />
       </div>
     </div>
 
@@ -673,7 +632,7 @@ return (
       <button onClick={sendMessage} className="ml-2 premium-btn">Send</button>
     </div>
 
-    {/* Modals */}
+    {/* Paywall Modal */}
     {showPaywall && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
         <motion.div
@@ -692,6 +651,7 @@ return (
       </div>
     )}
 
+    {/* Login Modal */}
     {showLogin && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
         <motion.div
@@ -712,6 +672,7 @@ return (
       </div>
     )}
 
+    {/* Sign Up Modal */}
     {showSignup && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
         <motion.div
@@ -732,6 +693,7 @@ return (
       </div>
     )}
 
+    {/* Verify Email Modal */}
     {showVerify && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
         <motion.div
@@ -751,6 +713,7 @@ return (
       </div>
     )}
 
+    {/* Premium Unlocked Modal */}
     {showPremiumUnlocked && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
         <motion.div
@@ -766,6 +729,7 @@ return (
       </div>
     )}
 
+    {/* Age Verification Modal */}
     {showAgeModal && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
         <motion.div
@@ -789,6 +753,7 @@ return (
       </div>
     )}
 
+    {/* Name Modal */}
     {showNameModal && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
         <motion.div
@@ -799,22 +764,13 @@ return (
         >
           <h2 className="text-2xl font-bold mb-4">Hey sweetheart! 🥰✨</h2>
           <p className="mb-4">What should I call you?</p>
-          <input
-            type="text"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-            placeholder="Enter your name..."
-            className="glass-input w-full mb-4"
-          />
-          <button
-            onClick={handleNameConfirm}
-            className="bg-gradient-to-r from-[#ff5fa3] to-[#A259FF] px-6 py-2 rounded-xl hover:scale-[1.05] transition-all duration-300"
-          >
+          <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Enter your name..." className="glass-input w-full mb-4" />
+          <button onClick={handleNameConfirm} className="bg-gradient-to-r from-[#ff5fa3] to-[#A259FF] px-6 py-2 rounded-xl hover:scale-[1.05] transition-all duration-300">
             Confirm
           </button>
         </motion.div>
       </div>
     )}
-
   </div>
 );
+}
