@@ -603,7 +603,13 @@ const body = {
             {msg.sender === "bot" && (
               <img src={getBotPic(selectedBot?.name || bot?.name)} alt="Bot" className="w-10 h-10 rounded-full mr-3" />
             )}
-            <div className={`max-w-[70%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] px-4 py-3 rounded-2xl text-base whitespace-pre-wrap leading-relaxed relative message-bubble ${msg.sender === "user" ? "user self-end" : ""}`}>
+        <div className={`
+  max-w-[70%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[70%] px-5 py-3 text-base whitespace-pre-wrap leading-relaxed relative
+  ${msg.sender === "user"
+    ? "bg-gradient-to-r from-[#ff5fa3] to-[#A259FF] text-white shadow-lg rounded-3xl rounded-br-none border border-white/20 backdrop-blur-sm"
+    : "bg-gray-900 text-gray-100 shadow-inner rounded-3xl rounded-bl-none border border-gray-700/50 backdrop-blur-sm"}
+`}>
+
               {msg.text}
               {msg.audio && <AudioWave url={msg.audio} />}
               {msg.image && <img src={msg.image} alt="NSFW" className="mt-2 w-full rounded-lg" />}
@@ -628,7 +634,8 @@ const body = {
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         rows={1}
-        className="flex-1 glass-input min-h-[40px] max-h-[200px] overflow-y-auto resize-none"
+       className="flex-1 bg-gray-900 text-white placeholder-gray-400 px-4 py-3 rounded-3xl shadow-inner focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-1 resize-none min-h-[44px] max-h-[200px] transition-all duration-300"
+
         placeholder="Type a message..."
       />
       <button onClick={sendMessage} className="ml-2 premium-btn">Send</button>
