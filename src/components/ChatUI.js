@@ -603,7 +603,6 @@ const body = {
         transition={{ duration: 0.3, delay: index * 0.05 }}
         className={`flex w-full mb-3 ${isUser ? "justify-end" : "justify-start"}`}
       >
-        {/* Avatar */}
         {!isUser && (
           <img
             src={botPic}
@@ -612,7 +611,6 @@ const body = {
           />
         )}
 
-        {/* Bubble */}
         <div
           className={`
             max-w-[70%] sm:max-w-[80%] px-5 py-3 text-base break-words leading-relaxed
@@ -629,10 +627,9 @@ const body = {
           )}
         </div>
 
-        {/* Optional user avatar */}
         {isUser && (
           <img
-            src="/path-to-user-avatar.png" // replace if you have user avatar
+            src="/path-to-user-avatar.png"
             alt="You"
             className="w-10 h-10 rounded-full ml-3 self-end flex-shrink-0"
           />
@@ -655,9 +652,7 @@ const body = {
   )}
 
   <div ref={chatEndRef} />
-</div>
-}}
-
+</div> 
 
     {/* Input Box */}
     <div className="flex p-4 bg-[#1F1B29]">
