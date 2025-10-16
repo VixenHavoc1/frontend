@@ -111,3 +111,7 @@ body {
   box-shadow: 0 0 4px rgba(100, 60, 180, 0.2);
   transform: translateY(0);
 }
+.text-shadow {
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
