@@ -79,19 +79,18 @@ body {
   outline: none;
 }
 
-/* 💎 The new premium button */
 /* ✨ Refined Premium Button */
 .premium-btn {
-  background: linear-gradient(135deg, #4c1d95, #7c3aed, #581c87);
-  color: #f8f7ff;
-  border: 1px solid rgba(180, 140, 255, 0.25);
-  border-radius: 0.5rem; /* less round, more premium */
-  padding: 0.45rem 1rem; /* slimmer look */
+  background: linear-gradient(120deg, #3c096c, #7b2cbf);
+  color: #f3f0ff;
+  border: 1px solid rgba(180, 140, 255, 0.15);
+  border-radius: 0.4rem;
+  padding: 0.4rem 0.9rem;
   font-weight: 500;
-  font-size: 0.9rem;
-  letter-spacing: 0.3px;
+  font-size: 0.85rem;
+  letter-spacing: 0.2px;
   transition: all 0.25s ease;
-  box-shadow: 0 0 8px rgba(150, 100, 255, 0.2);
+  box-shadow: 0 0 6px rgba(150, 100, 255, 0.2);
 }
 
 .premium-btn:hover {
