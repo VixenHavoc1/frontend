@@ -656,7 +656,7 @@ const body = {
 
   <div ref={chatEndRef} />
 </div>
-
+}}
 
 
     {/* Input Box */}
