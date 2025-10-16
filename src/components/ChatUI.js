@@ -589,7 +589,7 @@ const body = {
           </p>
         </div>
 
-        {/* Messages */}
+{/* Messages */}
 <div className="flex flex-col w-full items-start">
   {messages.map((msg, index) => {
     const isUser = msg.sender === "user";
@@ -601,40 +601,40 @@ const body = {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.05 }}
-        className={`flex w-full mb-4 ${isUser ? "justify-end" : "justify-start"}`}
+        className={`flex w-full mb-3 ${isUser ? "justify-end" : "justify-start"}`}
       >
-        {/* Bot Avatar */}
+        {/* Avatar */}
         {!isUser && (
           <img
             src={botPic}
             alt="Bot"
-            className="w-10 h-10 rounded-full mr-3 self-end"
+            className="w-10 h-10 rounded-full mr-3 self-end flex-shrink-0"
           />
         )}
 
-        {/* Message Bubble */}
+        {/* Bubble */}
         <div
           className={`
-            max-w-[70%] sm:max-w-[80%] px-4 py-3 text-base break-words leading-relaxed
-            relative rounded-2xl shadow-lg
+            max-w-[70%] sm:max-w-[80%] px-5 py-3 text-base break-words leading-relaxed
+            relative shadow-xl
             ${isUser 
-              ? "bg-gradient-to-r from-purple-900 to-purple-700 text-white rounded-tr-none text-shadow" 
-              : "bg-gray-800 text-gray-100 rounded-tl-none text-shadow"}
+              ? "bg-gradient-to-r from-purple-900 to-purple-700 text-white rounded-tr-xl rounded-bl-2xl rounded-tl-2xl rounded-br-none text-shadow" 
+              : "bg-gray-850 text-gray-100 rounded-tl-xl rounded-br-2xl rounded-tr-2xl rounded-bl-none text-shadow"}
           `}
         >
           {msg.text}
           {msg.audio && <AudioWave url={msg.audio} />}
           {msg.image && (
-            <img src={msg.image} alt="NSFW" className="mt-2 w-full rounded-lg" />
+            <img src={msg.image} alt="NSFW" className="mt-2 w-full rounded-xl" />
           )}
         </div>
 
-        {/* User Avatar (optional, if you want one) */}
+        {/* Optional user avatar */}
         {isUser && (
           <img
             src="/path-to-user-avatar.png" // replace if you have user avatar
             alt="You"
-            className="w-10 h-10 rounded-full ml-3 self-end"
+            className="w-10 h-10 rounded-full ml-3 self-end flex-shrink-0"
           />
         )}
       </motion.div>
@@ -643,12 +643,12 @@ const body = {
 
   {isTyping && (
     <motion.div
-      className="flex w-full justify-start mb-2"
+      className="flex w-full justify-start mb-3"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ repeat: Infinity, repeatType: "reverse", duration: 0.6 }}
     >
-      <div className="px-4 py-2 bg-[#3A2A4D] rounded-2xl text-sm">
+      <div className="px-4 py-2 bg-[#3A2A4D] rounded-2xl text-sm shadow-md">
         {(selectedBot?.name || bot?.name)} is typing...
       </div>
     </motion.div>
@@ -656,6 +656,7 @@ const body = {
 
   <div ref={chatEndRef} />
 </div>
+
 
 
     {/* Input Box */}
