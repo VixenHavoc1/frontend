@@ -67,5 +67,41 @@ body {
 
 .glass-input {
   background: rgba(40, 30, 60, 0.5);
-  border: 1px solid rgba(130, 80,
+  border: 1px solid rgba(130, 80, 255, 0.2);
+  border-radius: 0.75rem;
+  color: #e0d9ff;
+  padding: 0.75rem 1rem;
+  transition: all 0.25s ease;
+}
+.glass-input:focus {
+  border-color: rgba(160, 100, 255, 0.7);
+  box-shadow: 0 0 8px rgba(160, 100, 255, 0.4);
+  outline: none;
+}
 
+/* 💎 The new premium button */
+.premium-btn {
+  background: linear-gradient(135deg, #3d0078, #6b21a8, #2d0a4e);
+  color: #f5edff;
+  border: 1px solid rgba(170, 120, 255, 0.2);
+  border-radius: 0.75rem;
+  padding: 0.6rem 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 12px rgba(140, 90, 255, 0.25);
+}
+
+.premium-btn:hover {
+  background: linear-gradient(135deg, #5a1ea6, #7c3aed, #4b0082);
+  box-shadow: 0 0 20px rgba(160, 100, 255, 0.45);
+  transform: translateY(-1px);
+}
+
+.cancel-btn {
+  color: #b497ff;
+  transition: color 0.2s ease;
+}
+.cancel-btn:hover {
+  color: #ffffff;
+}
