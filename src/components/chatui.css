@@ -80,28 +80,27 @@ body {
 }
 
 /* 💎 The new premium button */
+/* ✨ Refined Premium Button */
 .premium-btn {
-  background: linear-gradient(135deg, #3d0078, #6b21a8, #2d0a4e);
-  color: #f5edff;
-  border: 1px solid rgba(170, 120, 255, 0.2);
-  border-radius: 0.75rem;
-  padding: 0.6rem 1.25rem;
-  font-weight: 600;
-  letter-spacing: 0.4px;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 12px rgba(140, 90, 255, 0.25);
+  background: linear-gradient(135deg, #4c1d95, #7c3aed, #581c87);
+  color: #f8f7ff;
+  border: 1px solid rgba(180, 140, 255, 0.25);
+  border-radius: 0.5rem; /* less round, more premium */
+  padding: 0.45rem 1rem; /* slimmer look */
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.3px;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 8px rgba(150, 100, 255, 0.2);
 }
 
 .premium-btn:hover {
-  background: linear-gradient(135deg, #5a1ea6, #7c3aed, #4b0082);
-  box-shadow: 0 0 20px rgba(160, 100, 255, 0.45);
+  background: linear-gradient(135deg, #5b21b6, #8b5cf6, #6b21a8);
+  box-shadow: 0 0 15px rgba(160, 120, 255, 0.35);
   transform: translateY(-1px);
 }
 
-.cancel-btn {
-  color: #b497ff;
-  transition: color 0.2s ease;
-}
-.cancel-btn:hover {
-  color: #ffffff;
+.premium-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 0 5px rgba(160, 120, 255, 0.25);
 }
