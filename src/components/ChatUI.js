@@ -789,24 +789,30 @@ const body = {
       </div>
     )}
 
-    {/* Name Modal */}
-    {showNameModal && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-          className="glass-modal p-8 max-w-sm w-full text-center"
-        >
-          <h2 className="text-2xl font-bold mb-4">Hey sweetheart! 🥰✨</h2>
-          <p className="mb-4">What should I call you?</p>
-          <input type="text" value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Enter your name..." className="glass-input w-full mb-4" />
-          <button onClick={handleNameConfirm} className="bg-gradient-to-r from-[#ff5fa3] to-[#A259FF] px-6 py-2 rounded-xl hover:scale-[1.05] transition-all duration-300">
-            Confirm
-          </button>
-        </motion.div>
-      </div>
-    )}
+  {/* Name Modal */}
+{showNameModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md">
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+      className="glass-modal p-8 max-w-sm w-full text-center"
+    >
+      <h2 className="text-2xl font-bold mb-4">Hey sweetheart! 🥰✨</h2>
+      <p className="mb-4">What should I call you?</p>
+      <input
+        type="text"
+        value={userName}
+        onChange={(e) => setUserName(e.target.value)}
+        placeholder="Enter your name..."
+        className="glass-input w-full mb-4"
+      />
+      <button
+        onClick={handleNameConfirm}
+        className="bg-gradient-to-r from-[#ff5fa3] to-[#A259FF] px-6 py-2 rounded-xl hover:scale-[1.05] transition-all duration-300"
+      >
+        Confirm
+      </button>
+    </motion.div>
   </div>
-);
-}
+)}
