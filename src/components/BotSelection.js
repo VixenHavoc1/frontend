@@ -12,11 +12,11 @@ export default function BotSelection({ onSelect }) {
   ];
 
   const roleplays = [
-    { name: "Teacher", vibe: "Strict yet caring mentor", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic15.png" },
-    { name: "Nurse", vibe: "Comforting and gentle", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic16.png" },
-    { name: "Gamer Girl", vibe: "Nerdy, funny, teasing", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic17.png" },
-    { name: "Model", vibe: "Elegant and confident", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic18.png" },
-    { name: "Secretary", vibe: "Professional and flirty", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic19.png" },
+    { name: "Aria", vibe: "Strict yet caring teacher", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic15.png" },
+    { name: "Elena", vibe: "Comforting and gentle nurse", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic16.png" },
+    { name: "Nova", vibe: "Nerdy, funny, teasing gamer girl", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic17.png" },
+    { name: "Selene", vibe: "Elegant and confident model", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic18.png" },
+    { name: "Kara", vibe: "Professional and flirty secretary", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic19.png" },
   ];
 
   const renderSection = (title, emoji, bots) => (
