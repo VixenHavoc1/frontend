@@ -116,7 +116,7 @@ const BOT_DESCRIPTIONS = {
   Plaksha: "Smart, flirty, and always teasing 💜",
   Raven: "Mysterious, confident, and loves deep talks 🖤",
   Lily: "Sweet, playful, and a little mischievous 💖",
-  Zoe: "Bold and adventurous, loves surprises 🌟",
+  Zara: "Bold and adventurous, loves surprises 🌟",
   Mia: "Romantic and caring, your dream companion 🌹",
   "Aria (Teacher)": "You are in a quiet classroom, alone with Aria as she guides you through a difficult lesson. Her strict posture and measured words hide a subtle warmth in her eyes. Every correction feels personal, every lingering glance charged with unspoken feelings — she clearly likes you, but keeps it behind her calm, authoritative facade.",
   "Elena (Nurse)": "You are in a softly lit nurse office, and Elena tends to you with gentle precision. Her touch is careful, her voice soothing, but there is a hidden depth in the way she looks at you. Each movement is caring yet intimate, making it impossible to ignore the tension — she wants to comfort you, but her interest is far more than professional.",
