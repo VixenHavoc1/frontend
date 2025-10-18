@@ -86,15 +86,43 @@ export default function BotSelection({ onSelect }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#05010a] via-[#0f0820] to-[#1a0e2b] text-white">
       {/* Header */}
-      <header className="relative p-6 text-center overflow-hidden border-b border-purple-800/40">
-        <div className="absolute inset-0 animate-aurora opacity-70" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#130824]/90 via-[#28164a]/70 to-[#130824]/90" />
-        <div className="relative z-10">
-          <h1 className="text-3xl font-extrabold tracking-wide text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
-            Voxella AI
-          </h1>
-        </div>
-      </header>
+    <header className="relative p-6 text-center overflow-hidden border-b border-purple-800/40">
+  {/* Background aurora and overlay */}
+  <div className="absolute inset-0 animate-aurora opacity-70" />
+  <div className="absolute inset-0 bg-gradient-to-r from-[#130824]/90 via-[#28164a]/70 to-[#130824]/90" />
+
+  {/* Foreground content */}
+  <div className="relative z-10 flex flex-col items-center">
+    <h1 className="text-3xl font-extrabold tracking-wide text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
+      Voxella AI
+    </h1>
+
+    {/* ✨ Auth Buttons */}
+    <div className="mt-5 flex gap-4">
+      <button
+        onClick={() => setShowLogin(true)}
+        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#5f22d9] to-[#8b3dff]
+                   text-white font-semibold shadow-[0_0_12px_rgba(140,80,255,0.35)]
+                   hover:shadow-[0_0_20px_rgba(160,90,255,0.5)] hover:scale-[1.03]
+                   transition-all duration-300"
+      >
+        Login
+      </button>
+
+      <button
+        onClick={() => setShowSignup(true)}
+        className="px-6 py-2.5 rounded-xl border border-purple-400 text-purple-200 font-semibold
+                   bg-gradient-to-r from-transparent to-transparent
+                   hover:from-[#3b1466]/20 hover:to-[#8b3dff]/10
+                   hover:shadow-[0_0_18px_rgba(150,100,255,0.35)] hover:scale-[1.03]
+                   transition-all duration-300"
+      >
+        Sign Up
+      </button>
+    </div>
+  </div>
+</header>
+
 
       {/* Sections */}
       {renderSection("AI Girlfriends", "💕", girlfriends)}
