@@ -80,8 +80,8 @@ export default function BotSelection({ onSelect }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => onSelect(bot)}
-              className="relative w-[70vw] sm:w-[200px] h-[300px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-transform duration-300 snap-center bot-glow bot-sparkle"
-            >
+              className="relative w-[65vw] sm:w-[180px] h-[220px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-transform duration-300 snap-center bot-glow bot-sparkle"
+     >
               <img src={bot.image} alt={bot.name} className="h-full w-full object-cover" loading="lazy" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-3">
                 <h3 className="text-base font-semibold text-white">{bot.name}</h3>
