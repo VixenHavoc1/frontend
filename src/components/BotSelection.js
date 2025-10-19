@@ -1,16 +1,20 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
-import AuthModals from "./AuthModals"; // ✅ Make sure this file exists and imports LoginModal + SignupModal internally
+import { useState, useEffect } from "react";
+import AuthModals from "./AuthModals";
 
 export default function BotSelection({ onSelect }) {
   // ✅ modal states
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("access_token"));
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Logout handler
+  // ✅ Set auth state safely on client side
+  useEffect(() => {
+    setIsAuthenticated(!!localStorage.getItem("access_token"));
+  }, []);
+
   function handleLogout() {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
@@ -123,7 +127,7 @@ export default function BotSelection({ onSelect }) {
             ) : (
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 text-sm font-semibold rounded-xl border border-purple-400/40 bg-red-700/30 text-white hover:bg-red-700/50 hover:shadow-[0_0_15px_rgba(255,0,0,0.4)] transition-all"
+                className="px-4 py-2 text-sm font-semibold rounded-xl border border-purple-400/40 bg-purple-800/20 text-purple-200 hover:bg-purple-700/40 hover:shadow-[0_0_15px_rgba(160,90,255,0.4)] transition-all"
               >
                 Logout
               </button>
@@ -142,7 +146,7 @@ export default function BotSelection({ onSelect }) {
         setShowLogin={setShowLogin}
         showSignup={showSignup}
         setShowSignup={setShowSignup}
-        setIsAuthenticated={setIsAuthenticated} // ✅ so login/signup updates auth state
+        setIsAuthenticated={setIsAuthenticated} // <- pass setter so modals can update auth
       />
     </div>
   );
