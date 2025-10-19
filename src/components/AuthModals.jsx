@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { login, signup, verifyEmail } from "../api";
+import React, { useState, useEffect } from "react";
+import { login, signup, verifyEmail, setUsername as apiSetUsername } from "../api";
 
 export default function AuthModals({
   showLogin,
@@ -10,20 +10,42 @@ export default function AuthModals({
   setIsAuthenticated,
 }) {
   const [showVerify, setShowVerify] = useState(false);
+  const [showUsername, setShowUsername] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
+  const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    setIsLoggedIn(!!token);
+  }, []);
 
   function closeAll() {
     setShowLogin(false);
     setShowSignup(false);
     setShowVerify(false);
+    setShowUsername(false);
     setEmail("");
     setPassword("");
     setCode("");
+    setUsername("");
     setError("");
+  }
+
+  function logout() {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+    setIsAuthenticated(false);
+    setIsLoggedIn(false);
+    closeAll();
   }
 
   async function handleLogin(e) {
@@ -38,12 +60,17 @@ export default function AuthModals({
 
     if (res.access_token) {
       localStorage.setItem("access_token", res.access_token);
-      if (res.refresh_token)
-        localStorage.setItem("refresh_token", res.refresh_token);
+      if (res.refresh_token) localStorage.setItem("refresh_token", res.refresh_token);
       localStorage.setItem("userEmail", email);
       if (res.user_id) localStorage.setItem("userId", res.user_id);
 
-      setIsAuthenticated(true); // ✅ instantly update parent
+      // Show username modal if user has no name yet
+      if (!res.user_name) {
+        setShowUsername(true);
+      } else {
+        setIsAuthenticated(true);
+        setIsLoggedIn(true);
+      }
       closeAll();
     } else {
       setError(res.error || "Invalid credentials.");
@@ -61,14 +88,17 @@ export default function AuthModals({
     if (!res) return setError("Signup failed.");
 
     if (res.already_verified && res.auto_login) {
-      // Auto-login if already verified
       localStorage.setItem("access_token", res.access_token);
-      if (res.refresh_token)
-        localStorage.setItem("refresh_token", res.refresh_token);
+      if (res.refresh_token) localStorage.setItem("refresh_token", res.refresh_token);
       localStorage.setItem("userEmail", email);
       if (res.user_id) localStorage.setItem("userId", res.user_id);
 
-      setIsAuthenticated(true); // ✅ update parent instantly
+      if (!res.user_name) {
+        setShowUsername(true);
+      } else {
+        setIsAuthenticated(true);
+        setIsLoggedIn(true);
+      }
       closeAll();
       return;
     }
@@ -80,7 +110,7 @@ export default function AuthModals({
       return;
     }
 
-    // New/unverified user → open verification modal
+    // New/unverified user → show verification modal
     setShowSignup(false);
     setShowVerify(true);
   }
@@ -95,32 +125,43 @@ export default function AuthModals({
 
     if (!res) return setError("Verification failed.");
 
-   if (res.access_token || res.message === "Email verified successfully") {
-  if (res.access_token) {
-    localStorage.setItem("access_token", res.access_token);
-    if (res.refresh_token)
-      localStorage.setItem("refresh_token", res.refresh_token);
-    localStorage.setItem("userEmail", email);
-    if (res.user_id) localStorage.setItem("userId", res.user_id);
+    if (res.access_token || res.message === "Email verified successfully") {
+      if (res.access_token) {
+        localStorage.setItem("access_token", res.access_token);
+        if (res.refresh_token) localStorage.setItem("refresh_token", res.refresh_token);
+        localStorage.setItem("userEmail", email);
+        if (res.user_id) localStorage.setItem("userId", res.user_id);
+      }
+
+      setShowVerify(false);
+      setShowUsername(true); // show username modal next
+      return;
+    }
+
+    setError(res.error || "Invalid verification code.");
   }
 
-  setIsAuthenticated(true);
-  closeAll();
-  setLoading(false);
-  return;
-}
+  async function handleSetUsername(e) {
+    e.preventDefault();
+    if (!username) return setError("Username cannot be empty.");
+    setLoading(true);
+    setError("");
 
+    const res = await apiSetUsername(username); // your API call to save username
+    setLoading(false);
 
-setError(res.error || "Invalid verification code.");
+    if (!res || res.error) return setError(res?.error || "Failed to set username.");
 
+    localStorage.setItem("userName", username);
+    setIsAuthenticated(true);
+    setIsLoggedIn(true);
+    setShowUsername(false);
   }
 
   const renderModal = (title, fields, onSubmit) => (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="relative bg-gradient-to-b from-[#0a0315] to-[#07000a] border border-purple-800 p-6 rounded-2xl w-[90%] max-w-sm shadow-xl">
-        <h2 className="text-2xl font-semibold text-purple-300 mb-4 text-center">
-          {title}
-        </h2>
+        <h2 className="text-2xl font-semibold text-purple-300 mb-4 text-center">{title}</h2>
         <form onSubmit={onSubmit} className="flex flex-col gap-3">
           {fields.includes("email") && (
             <input
@@ -152,6 +193,16 @@ setError(res.error || "Invalid verification code.");
               required
             />
           )}
+          {fields.includes("username") && (
+            <input
+              type="text"
+              placeholder="Set Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full p-3 rounded-lg bg-black/60 border border-purple-700 text-purple-100 focus:outline-none focus:border-purple-400"
+              required
+            />
+          )}
 
           {error && <p className="text-red-400 text-sm text-center">{error}</p>}
 
@@ -163,7 +214,6 @@ setError(res.error || "Invalid verification code.");
             {loading ? "Please wait..." : title}
           </button>
 
-          {/* modal switch footer */}
           {title === "Login" && (
             <p className="text-sm text-purple-200 mt-3 text-center">
               Don’t have an account?{" "}
@@ -205,10 +255,21 @@ setError(res.error || "Invalid verification code.");
 
   return (
     <>
+      {isLoggedIn && (
+        <div className="fixed top-4 right-4 z-50">
+          <button
+            onClick={logout}
+            className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg"
+          >
+            Logout
+          </button>
+        </div>
+      )}
+
       {showLogin && renderModal("Login", ["email", "password"], handleLogin)}
       {showSignup && renderModal("Sign Up", ["email", "password"], handleSignup)}
-      {showVerify &&
-        renderModal("Verify Email", ["email", "code"], handleVerify)}
+      {showVerify && renderModal("Verify Email", ["email", "code"], handleVerify)}
+      {showUsername && renderModal("Set Username", ["username"], handleSetUsername)}
     </>
   );
 }
