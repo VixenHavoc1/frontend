@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { login, signup, verifyEmail } from "../utils/api";
+import { login, signup, verifyEmail } from "../api";
 
 export default function AuthModals({ showLogin, setShowLogin, showSignup, setShowSignup }) {
   const [showVerify, setShowVerify] = useState(false);
