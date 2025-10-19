@@ -675,9 +675,9 @@ const body = {
         >
           <h2 className="text-3xl font-bold mb-6">Unlock Premium Access</h2>
           <div className="space-y-4">
-            <button onClick={() => handleTierClick("tier1")} className="premium-btn w-full text-lg">Unlock for $5 (One-Time)</button>
-            <button onClick={() => handleTierClick("tier2")} className="premium-btn w-full text-lg">Unlock for $10 (One Week)</button>
-            <button onClick={() => handleTierClick("tier3")} className="premium-btn w-full text-lg">Unlock for $20 (One Month)</button>
+            <button onClick={() => handleTierClick("tier1")} className="premium-btn w-full text-lg">Unlock for $3 (One-Time)</button>
+            <button onClick={() => handleTierClick("tier2")} className="premium-btn w-full text-lg">Unlock for $5 (One Week)</button>
+            <button onClick={() => handleTierClick("tier3")} className="premium-btn w-full text-lg">Unlock for $7 (One Month)</button>
           </div>
         </motion.div>
       </div>
