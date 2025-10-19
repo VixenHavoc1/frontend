@@ -799,5 +799,3 @@ const body = {
   </div>
 );
 }
-// at the very end of ChatUI.js (below the default export)
-export { LoginModal, SignupModal };
