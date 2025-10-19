@@ -234,9 +234,16 @@ const handleKeyDown = (e) => {
 
   const getBotPic = (botName) => {
     const name = botName?.toLowerCase() || "";
-    if (name.includes("lily")) return "/lily.png";
-    if (name.includes("plaksha")) return "/plaksha.png";
-    if (name.includes("raven")) return "/raven.png";
+    if (name.includes("lily")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic10.png";
+    if (name.includes("plaksha")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic12.png";
+    if (name.includes("raven")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic11.png";
+     if (name.includes("zara")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic15.png";
+     if (name.includes("mia")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic16.png";
+     if (name.includes("aria")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p2.png";
+     if (name.includes("elena")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p3.png";
+     if (name.includes("nova")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p5.png";
+     if (name.includes("selene")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p1.png";
+     if (name.includes("kara")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p4.png";
     return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic14.png";
   };
 
