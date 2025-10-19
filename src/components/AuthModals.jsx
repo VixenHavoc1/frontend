@@ -95,18 +95,15 @@ export default function AuthModals({
 
     if (!res) return setError("Verification failed.");
 
-    if (res.access_token) {
-      localStorage.setItem("access_token", res.access_token);
-      if (res.refresh_token)
-        localStorage.setItem("refresh_token", res.refresh_token);
-      localStorage.setItem("userEmail", email);
-      if (res.user_id) localStorage.setItem("userId", res.user_id);
+   if (res.access_token || res.message === "Email verified successfully") {
+  setIsAuthenticated(true);
+  closeAll();
+  setLoading(false);
+  return;
+}
 
-      setIsAuthenticated(true); // ✅ mark logged in right away
-      closeAll();
-    } else {
-      setError(res.error || "Invalid verification code.");
-    }
+setError(res.error || "Invalid verification code.");
+
   }
 
   const renderModal = (title, fields, onSubmit) => (
