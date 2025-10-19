@@ -288,7 +288,7 @@ const handleSignupSubmit = async (e) => {
     if (err.message?.includes("already verified")) {
       setError("Email already verified but incorrect password.");
     } else {
-      setError(err.message || "Something went wrong. Please try again.");
+      setError("Something went wrong. Please try again.");
     }
   }
 };
@@ -313,7 +313,7 @@ const handleVerifySubmit = async (e) => {
     }
   } catch (err) {
     console.error(err);
-    setError(err.message || "Verification or login failed");
+    setError("Verification or login failed");
   }
 };
 
