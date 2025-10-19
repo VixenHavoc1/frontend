@@ -173,3 +173,36 @@ export default function AuthModals({
             </p>
           )}
           {title === "Sign Up" && (
+            <p className="text-sm text-purple-200 mt-3 text-center">
+              Already have an account?{" "}
+              <span
+                onClick={() => {
+                  setShowSignup(false);
+                  setShowLogin(true);
+                }}
+                className="text-purple-400 hover:underline cursor-pointer"
+              >
+                Log in
+              </span>
+            </p>
+          )}
+        </form>
+        <button
+          onClick={closeAll}
+          className="absolute top-3 right-4 text-purple-400 hover:text-purple-300 text-xl"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {showLogin && renderModal("Login", ["email", "password"], handleLogin)}
+      {showSignup && renderModal("Sign Up", ["email", "password"], handleSignup)}
+      {showVerify &&
+        renderModal("Verify Email", ["email", "code"], handleVerify)}
+    </>
+  );
+}
