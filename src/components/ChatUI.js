@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 import { supabase } from './supabaseClient'
 import "./chatui.css";
 import { apiFetch, login, signup, verifyEmail, fetchMe, sendMessage, logout } from "../api";
+
 export default function ChatUI({ bot }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -798,3 +799,5 @@ const body = {
   </div>
 );
 }
+// at the very end of ChatUI.js (below the default export)
+export { LoginModal, SignupModal };
