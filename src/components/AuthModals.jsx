@@ -94,13 +94,23 @@ export default function AuthModals({
     setLoading(false);
 
     if (!res) return setError("Verification failed.");
+    
+    if (res.access_token) {
+  // ✅ store session just like login
+  localStorage.setItem("access_token", res.access_token);
+  if (res.refresh_token)
+    localStorage.setItem("refresh_token", res.refresh_token);
+  localStorage.setItem("userEmail", email);
+  if (res.user_id) localStorage.setItem("userId", res.user_id);
 
-   if (res.access_token || res.message === "Email verified successfully") {
   setIsAuthenticated(true);
   closeAll();
   setLoading(false);
   return;
 }
+
+if (res.message === "Email verified successfully" && res.auto_login) {
+  // ✅ handle backend auto-login after verify
 
 setError(res.error || "Invalid verification code.");
 
