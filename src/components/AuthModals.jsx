@@ -2,7 +2,13 @@
 import React, { useState } from "react";
 import { login, signup, verifyEmail } from "../api";
 
-export default function AuthModals({ showLogin, setShowLogin, showSignup, setShowSignup, setIsAuthenticated }) {
+export default function AuthModals({
+  showLogin,
+  setShowLogin,
+  showSignup,
+  setShowSignup,
+  setIsAuthenticated,
+}) {
   const [showVerify, setShowVerify] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,11 +38,12 @@ export default function AuthModals({ showLogin, setShowLogin, showSignup, setSho
 
     if (res.access_token) {
       localStorage.setItem("access_token", res.access_token);
-      if (res.refresh_token) localStorage.setItem("refresh_token", res.refresh_token);
+      if (res.refresh_token)
+        localStorage.setItem("refresh_token", res.refresh_token);
       localStorage.setItem("userEmail", email);
       if (res.user_id) localStorage.setItem("userId", res.user_id);
 
-      setIsAuthenticated(true); // ✅ update parent state
+      setIsAuthenticated(true); // ✅ instantly update parent
       closeAll();
     } else {
       setError(res.error || "Invalid credentials.");
@@ -54,13 +61,14 @@ export default function AuthModals({ showLogin, setShowLogin, showSignup, setSho
     if (!res) return setError("Signup failed.");
 
     if (res.already_verified && res.auto_login) {
-      // Auto-login for verified user
+      // Auto-login if already verified
       localStorage.setItem("access_token", res.access_token);
-      if (res.refresh_token) localStorage.setItem("refresh_token", res.refresh_token);
+      if (res.refresh_token)
+        localStorage.setItem("refresh_token", res.refresh_token);
       localStorage.setItem("userEmail", email);
       if (res.user_id) localStorage.setItem("userId", res.user_id);
 
-      setIsAuthenticated(true); // ✅ update parent state
+      setIsAuthenticated(true); // ✅ update parent instantly
       closeAll();
       return;
     }
@@ -72,7 +80,7 @@ export default function AuthModals({ showLogin, setShowLogin, showSignup, setSho
       return;
     }
 
-    // New or unverified user → verification modal
+    // New/unverified user → open verification modal
     setShowSignup(false);
     setShowVerify(true);
   }
@@ -89,20 +97,24 @@ export default function AuthModals({ showLogin, setShowLogin, showSignup, setSho
 
     if (res.access_token) {
       localStorage.setItem("access_token", res.access_token);
-      if (res.refresh_token) localStorage.setItem("refresh_token", res.refresh_token);
+      if (res.refresh_token)
+        localStorage.setItem("refresh_token", res.refresh_token);
       localStorage.setItem("userEmail", email);
       if (res.user_id) localStorage.setItem("userId", res.user_id);
 
-      setIsAuthenticated(true); // ✅ update parent state
+      setIsAuthenticated(true); // ✅ mark logged in right away
+      closeAll();
+    } else {
+      setError(res.error || "Invalid verification code.");
     }
-
-    closeAll();
   }
 
   const renderModal = (title, fields, onSubmit) => (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-gradient-to-b from-[#0a0315] to-[#07000a] border border-purple-800 p-6 rounded-2xl w-[90%] max-w-sm shadow-xl">
-        <h2 className="text-2xl font-semibold text-purple-300 mb-4 text-center">{title}</h2>
+      <div className="relative bg-gradient-to-b from-[#0a0315] to-[#07000a] border border-purple-800 p-6 rounded-2xl w-[90%] max-w-sm shadow-xl">
+        <h2 className="text-2xl font-semibold text-purple-300 mb-4 text-center">
+          {title}
+        </h2>
         <form onSubmit={onSubmit} className="flex flex-col gap-3">
           {fields.includes("email") && (
             <input
@@ -161,35 +173,3 @@ export default function AuthModals({ showLogin, setShowLogin, showSignup, setSho
             </p>
           )}
           {title === "Sign Up" && (
-            <p className="text-sm text-purple-200 mt-3 text-center">
-              Already have an account?{" "}
-              <span
-                onClick={() => {
-                  setShowSignup(false);
-                  setShowLogin(true);
-                }}
-                className="text-purple-400 hover:underline cursor-pointer"
-              >
-                Log in
-              </span>
-            </p>
-          )}
-        </form>
-        <button
-          onClick={closeAll}
-          className="absolute top-3 right-4 text-purple-400 hover:text-purple-300 text-xl"
-        >
-          ✕
-        </button>
-      </div>
-    </div>
-  );
-
-  return (
-    <>
-      {showLogin && renderModal("Login", ["email", "password"], handleLogin)}
-      {showSignup && renderModal("Sign Up", ["email", "password"], handleSignup)}
-      {showVerify && renderModal("Verify Email", ["email", "code"], handleVerify)}
-    </>
-  );
-}
