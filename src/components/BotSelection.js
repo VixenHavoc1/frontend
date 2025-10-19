@@ -8,6 +8,18 @@ export default function BotSelection({ onSelect }) {
   // ✅ modal states
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("access_token"));
+
+  // Logout handler
+  function handleLogout() {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userId");
+
+    setIsAuthenticated(false);
+  }
 
   const girlfriends = [
     { name: "Lily", vibe: "Submissive • Sweet & Caring", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic10.png" },
@@ -93,18 +105,29 @@ export default function BotSelection({ onSelect }) {
 
           {/* Auth Buttons */}
           <div className="flex gap-3">
-            <button
-              onClick={() => setShowLogin(true)}
-              className="px-4 py-2 text-sm font-semibold rounded-xl border border-purple-400/40 bg-purple-800/20 text-purple-200 hover:bg-purple-700/40 hover:shadow-[0_0_15px_rgba(160,90,255,0.4)] transition-all"
-            >
-              Login
-            </button>
-            <button
-              onClick={() => setShowSignup(true)}
-              className="px-4 py-2 text-sm font-semibold rounded-xl border border-purple-400/40 bg-purple-800/20 text-purple-200 hover:bg-purple-700/40 hover:shadow-[0_0_15px_rgba(160,90,255,0.4)] transition-all"
-            >
-              Sign Up
-            </button>
+            {!isAuthenticated ? (
+              <>
+                <button
+                  onClick={() => setShowLogin(true)}
+                  className="px-4 py-2 text-sm font-semibold rounded-xl border border-purple-400/40 bg-purple-800/20 text-purple-200 hover:bg-purple-700/40 hover:shadow-[0_0_15px_rgba(160,90,255,0.4)] transition-all"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => setShowSignup(true)}
+                  className="px-4 py-2 text-sm font-semibold rounded-xl border border-purple-400/40 bg-purple-800/20 text-purple-200 hover:bg-purple-700/40 hover:shadow-[0_0_15px_rgba(160,90,255,0.4)] transition-all"
+                >
+                  Sign Up
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 text-sm font-semibold rounded-xl border border-purple-400/40 bg-red-700/30 text-white hover:bg-red-700/50 hover:shadow-[0_0_15px_rgba(255,0,0,0.4)] transition-all"
+              >
+                Logout
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -119,8 +142,8 @@ export default function BotSelection({ onSelect }) {
         setShowLogin={setShowLogin}
         showSignup={showSignup}
         setShowSignup={setShowSignup}
+        setIsAuthenticated={setIsAuthenticated} // ✅ so login/signup updates auth state
       />
     </div>
   );
 }
-
