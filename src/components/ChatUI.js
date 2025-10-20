@@ -293,37 +293,58 @@ const handleSignupSubmit = async (e) => {
   }
 };
 
-
 const handleVerifySubmit = async (e) => {
   e.preventDefault();
   setError("");
+
+  // 🔁 Silent retry helper
+  async function safeFetch(fn, args = [], retries = 2, delay = 1500) {
+    for (let i = 0; i <= retries; i++) {
+      try {
+        return await fn(...args);
+      } catch (err) {
+        console.warn(`Verify attempt ${i + 1} failed:`, err.message);
+        if (i < retries) {
+          await new Promise((r) => setTimeout(r, delay));
+          continue;
+        } else {
+          throw err;
+        }
+      }
+    }
+  }
+
   try {
-    await verifyEmail(email, verifyCode);
+    // ✅ Verify email with retry
+    await safeFetch(verifyEmail, [email, verifyCode]);
 
-    const loginData = await login(email, password);
-if (!loginData.access_token) throw new Error("Login failed");
+    // ✅ Then login with retry
+    const loginData = await safeFetch(login, [email, password]);
 
-// ✅ Save tokens first
-await Promise.resolve().then(() => {
-  localStorage.setItem("access_token", loginData.access_token);
-  localStorage.setItem("refresh_token", loginData.refresh_token || "");
-});
+    if (!loginData.access_token) throw new Error("Login failed");
 
-setIsAuthenticated(true);
-setShowVerify(false);
+    // ✅ Save tokens
+    await Promise.resolve().then(() => {
+      localStorage.setItem("access_token", loginData.access_token);
+      localStorage.setItem("refresh_token", loginData.refresh_token || "");
+    });
 
-// ✅ Delay before fetching user info
-await new Promise(r => setTimeout(r, 500));
-const userData = await syncUserData();
+    setIsAuthenticated(true);
+    setShowVerify(false);
+
+    // ✅ Let localStorage sync before fetching user info
+    await new Promise((r) => setTimeout(r, 500));
+    const userData = await syncUserData();
 
     if (userData && !userData.display_name) {
       setShowNameModal(true);
     }
   } catch (err) {
-    console.error(err);
-   
+    console.error("Verification/Login error:", err);
+    setError("Something went wrong. Please try again.");
   }
 };
+
 
 
 
@@ -434,59 +455,80 @@ const syncUserData = async () => {
     }
   }, []);
 
-
-// Login handler
 const handleLoginSubmit = async (e) => {
   e.preventDefault();
   setError("");
 
+  // 🔁 Silent retry logic
+  async function safeLoginFetch(url, payload, retries = 2, delay = 1500) {
+    for (let i = 0; i <= retries; i++) {
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        // ✅ Success — return parsed data
+        if (res.ok) return await res.json();
+
+        // ❌ Known user-related errors (don’t retry)
+        if ([401, 404].includes(res.status)) {
+          const msg =
+            res.status === 401
+              ? "Incorrect email or password."
+              : "User not found. Please sign up first.";
+          throw new Error(msg);
+        }
+
+        throw new Error(`HTTP ${res.status}`);
+      } catch (err) {
+        console.warn(`Login attempt ${i + 1} failed:`, err.message);
+        if (i < retries) {
+          await new Promise((r) => setTimeout(r, delay));
+          continue; // try again silently
+        } else {
+          throw err; // give up after all retries
+        }
+      }
+    }
+  }
+
   try {
-    const res = await fetch(`${CHAT_BACKEND_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+    const data = await safeLoginFetch(`${CHAT_BACKEND_URL}/login`, {
+      email,
+      password,
     });
 
-    const data = await res.json();
-
-    // Handle non-200 responses
-    if (!res.ok) {
-      if (res.status === 401) {
-        setError("Incorrect email or password.");
-      } else if (res.status === 404) {
-        setError("User not found. Please sign up first.");
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
-      return;
-    }
-
-    // Expect tokens
     if (!data.access_token) {
       throw new Error("Login failed — missing token");
     }
 
-    // Save tokens + auth state
-    // Save tokens + auth state (ensure they’re written before continuing)
-await Promise.resolve().then(() => {
-  localStorage.setItem("access_token", data.access_token);
-  localStorage.setItem("refresh_token", data.refresh_token || "");
-});
+    await Promise.resolve().then(() => {
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("refresh_token", data.refresh_token || "");
+    });
 
-setIsAuthenticated(true);
-setShowLogin(false);
+    setIsAuthenticated(true);
+    setShowLogin(false);
 
-// ✅ Wait a tick to let localStorage propagate
-await new Promise(r => setTimeout(r, 500));
-const userData = await syncUserData();
+    await new Promise((r) => setTimeout(r, 500));
+    const userData = await syncUserData();
 
     if (userData && !userData.display_name) setShowNameModal(true);
-
   } catch (err) {
     console.error("Login error:", err);
-    setError("Incorrect email or password."); // fallback
+    if (
+      err.message.includes("Incorrect email or password") ||
+      err.message.includes("User not found")
+    ) {
+      setError(err.message);
+    } else {
+      setError("Something went wrong. Please try again.");
+    }
   }
 };
+
 
   // Empty dependency array means it runs only once on mount
 const sendMessage = async () => {
