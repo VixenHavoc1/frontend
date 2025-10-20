@@ -301,12 +301,20 @@ const handleVerifySubmit = async (e) => {
     await verifyEmail(email, verifyCode);
 
     const loginData = await login(email, password);
-    if (!loginData.access_token) throw new Error("Login failed");
+if (!loginData.access_token) throw new Error("Login failed");
 
-    setIsAuthenticated(true);
-    setShowVerify(false);
+// ✅ Save tokens first
+await Promise.resolve().then(() => {
+  localStorage.setItem("access_token", loginData.access_token);
+  localStorage.setItem("refresh_token", loginData.refresh_token || "");
+});
 
-    const userData = await syncUserData();
+setIsAuthenticated(true);
+setShowVerify(false);
+
+// ✅ Delay before fetching user info
+await new Promise(r => setTimeout(r, 100));
+const userData = await syncUserData();
 
     if (userData && !userData.display_name) {
       setShowNameModal(true);
@@ -459,12 +467,19 @@ const handleLoginSubmit = async (e) => {
     }
 
     // Save tokens + auth state
-    localStorage.setItem("access_token", data.access_token);
-    localStorage.setItem("refresh_token", data.refresh_token || "");
-    setIsAuthenticated(true);
-    setShowLogin(false);
+    // Save tokens + auth state (ensure they’re written before continuing)
+await Promise.resolve().then(() => {
+  localStorage.setItem("access_token", data.access_token);
+  localStorage.setItem("refresh_token", data.refresh_token || "");
+});
 
-    const userData = await syncUserData();
+setIsAuthenticated(true);
+setShowLogin(false);
+
+// ✅ Wait a tick to let localStorage propagate
+await new Promise(r => setTimeout(r, 100));
+const userData = await syncUserData();
+
     if (userData && !userData.display_name) setShowNameModal(true);
 
   } catch (err) {
