@@ -313,7 +313,7 @@ setIsAuthenticated(true);
 setShowVerify(false);
 
 // ✅ Delay before fetching user info
-await new Promise(r => setTimeout(r, 100));
+await new Promise(r => setTimeout(r, 500));
 const userData = await syncUserData();
 
     if (userData && !userData.display_name) {
