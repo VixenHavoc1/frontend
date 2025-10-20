@@ -313,7 +313,7 @@ const handleVerifySubmit = async (e) => {
     }
   } catch (err) {
     console.error(err);
-    setError("Verification or login failed");
+   
   }
 };
 
@@ -448,7 +448,7 @@ const handleLoginSubmit = async (e) => {
       } else if (res.status === 404) {
         setError("User not found. Please sign up first.");
       } else {
-        setError(data.detail || "Something went wrong. Please try again.");
+        setError("Something went wrong. Please try again.");
       }
       return;
     }
