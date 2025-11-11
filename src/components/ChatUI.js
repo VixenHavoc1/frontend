@@ -113,18 +113,48 @@ useEffect(() => {
   if (savedFree) setFreeMessagesLeft(parseInt(savedFree, 10));
 }, []);
   
-const BOT_DESCRIPTIONS = {
-  Plaksha: "Smart, flirty, and always teasing 💜",
-  Raven: "Mysterious, confident, and loves deep talks 🖤",
-  Lily: "Sweet, playful, and a little mischievous 💖",
-  Zara: "Bold and adventurous, loves surprises 🌟",
-  Mia: "Romantic and caring, your dream companion 🌹",
-  Aria: "You are in a quiet classroom, alone with Aria as she guides you through a difficult lesson. Her strict posture and measured words hide a subtle warmth in her eyes. Every correction feels personal, every lingering glance charged with unspoken feelings — she clearly likes you, but keeps it behind her calm, authoritative facade.",
-  Elena: "You are in a softly lit nurse office, and Elena tends to you with gentle precision. Her touch is careful, her voice soothing, but there is a hidden depth in the way she looks at you. Each movement is caring yet intimate, making it impossible to ignore the tension — she wants to comfort you, but her interest is far more than professional.",
-  Nova: "You are sitting side by side on a couch, controllers in hand, and Nova teases you through every game. Her laughter fills the room, playful and mischievous, but every brush of her shoulder and every smirk hints at something more. The friendly banter is electric — it is a game, but one with stakes that feel deeply personal.",
-  Selene: "You are backstage at a photoshoot with Selene, watching her move with poise and grace. She explains poses and lighting, but her glances linger just a bit too long. Every word is deliberate, every smile a subtle invitation. The air is charged with tension, and it is impossible to look away — she is both teacher and temptress.",
-  Kara: "You are in a quiet office, alone with Kara as she organizes files and schedules. Her tone is polite, precise, and professional — but her eyes flicker with mischief. Every small gesture, every question seems layered with unspoken intent. The tension is palpable; behind the perfect manners, she is teasing you with a dangerous subtlety."
-};
+const BOT_DESCRIPTIONS = [
+  {
+    name: "Luna",
+    vibe: "Calm • Reflective & Gentle",
+    description:
+      "A soft voice for when your mind feels heavy. Luna helps you find balance through stillness and gentle reflection.",
+    image:
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    name: "Kai",
+    vibe: "Supportive • Uplifting & Insightful",
+    description:
+      "When life feels uncertain, Kai brings perspective — kind reminders that you’re stronger and wiser than you think.",
+    image:
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    name: "Willow",
+    vibe: "Empathetic • Grounded & Nature-Loving",
+    description:
+      "A grounding presence who helps you slow down, breathe, and reconnect with nature and yourself.",
+    image:
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    name: "Sol",
+    vibe: "Warm • Motivational & Optimistic",
+    description:
+      "When you’re running low on energy, Sol helps you rediscover light and motivation — a voice of gentle encouragement.",
+    image:
+      "https://images.unsplash.com/photo-1470770903676-69b98201ea1c?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    name: "Aria",
+    vibe: "Mindful • Kind & Understanding",
+    description:
+      "Aria helps you pause and reflect. Every conversation with her feels like a calm breath of clarity and compassion.",
+    image:
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+  },
+];
 
 const silentLogout = () => {
     console.log("LOGOUT: Clearing user session data."); // 🐛 Debug log
@@ -232,20 +262,27 @@ const handleKeyDown = (e) => {
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
-  const getBotPic = (botName) => {
-    const name = botName?.toLowerCase() || "";
-    if (name.includes("lily")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic10.png";
-    if (name.includes("plaksha")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic11.png";
-    if (name.includes("raven")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic12.png";
-     if (name.includes("zara")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic15.png";
-     if (name.includes("mia")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic16.png";
-     if (name.includes("aria")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p2.png";
-     if (name.includes("elena")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p3.png";
-     if (name.includes("nova")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p5.png";
-     if (name.includes("selene")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p1.png";
-     if (name.includes("kara")) return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p4.png";
-    return "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic14.png";
-  };
+ const getBotPic = (botName) => {
+  const name = botName?.toLowerCase() || "";
+
+  if (name.includes("luna"))
+    return "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80";
+
+  if (name.includes("kai"))
+    return "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80";
+
+  if (name.includes("willow"))
+    return "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80";
+
+  if (name.includes("sol"))
+    return "https://images.unsplash.com/photo-1470770903676-69b98201ea1c?auto=format&fit=crop&w=800&q=80";
+
+  if (name.includes("aria"))
+    return "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80";
+
+  // fallback image (calm default nature photo)
+  return "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80";
+};
 
 const handleSignupSubmit = async (e) => {
   e.preventDefault();
