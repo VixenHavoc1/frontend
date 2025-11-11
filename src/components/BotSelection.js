@@ -59,7 +59,7 @@ export default function BotSelection({ onSelect }) {
       {/* Header */}
       <header className="relative z-10 p-6 border-b border-white/30 backdrop-blur-sm flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-wide text-[#1e3a34]">
-          MindCompanion 🌿
+          VOXELLA 🌿
         </h1>
         <div className="flex gap-3">
           {!isAuthenticated ? (
