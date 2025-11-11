@@ -890,7 +890,7 @@ const body = {
         </motion.div>
       </div>
     )}
-  {showVerification && (
+  {showVerify && (
   <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
     <form
       onSubmit={handleVerifySubmit}
