@@ -890,6 +890,62 @@ const body = {
         </motion.div>
       </div>
     )}
+   {/* Verification Modal */}
+{showVerification && (
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setError("");
+        try {
+          const res = await fetch(`${BACKEND_URL}/verify`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, code: verificationCode }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            setShowVerification(false);
+            setIsAuthenticated(true);
+            localStorage.setItem("token", data.token);
+          } else {
+            setError(data.detail || "Invalid code");
+          }
+        } catch (err) {
+          setError("Network error");
+        }
+      }}
+      className="bg-gray-800 p-6 rounded-2xl w-80 space-y-4 relative"
+    >
+      <h2 className="text-xl font-bold text-center">Verify Your Email</h2>
+      <p className="text-gray-300 text-sm text-center">
+        We’ve sent a 6-digit verification code to <b>{email}</b>.
+      </p>
+      <input
+        type="text"
+        value={verificationCode}
+        onChange={(e) => setVerificationCode(e.target.value)}
+        placeholder="Enter verification code"
+        className="w-full p-2 rounded bg-gray-700 text-white text-center tracking-widest"
+        maxLength={6}
+      />
+      {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+      <button
+        type="submit"
+        className="bg-teal-500 hover:bg-teal-400 text-white w-full py-2 rounded"
+      >
+        Verify
+      </button>
+      <button
+        type="button"
+        onClick={() => setShowVerification(false)}
+        className="absolute top-2 right-2 text-gray-400 hover:text-white"
+      >
+        ✕
+      </button>
+    </form>
+  </div>
+)}
 
     {/* Name Modal */}
     {showNameModal && (
