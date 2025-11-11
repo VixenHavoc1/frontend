@@ -7,8 +7,8 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata = {
-  title: "Voxella AI",
-  description: "AI Girlfriend",
+  title: "Voxella",
+  description: "Mind Companion",
   viewport: "width=device-width, initial-scale=1.0", // ✅ This makes it mobile-responsive
 };
 
