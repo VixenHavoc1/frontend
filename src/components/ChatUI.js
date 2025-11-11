@@ -681,7 +681,7 @@ const body = {
     {/* Header */}
     <div className="bg-white/10 backdrop-blur-md p-4 flex justify-between items-center rounded-b-2xl border-b border-white/10">
       <h1 className="text-2xl font-bold text-white text-center sm:text-lg md:text-xl">
-        VOXELLA AI
+        VOXELLA ☀️
       </h1>
       {!isAuthenticated && (
         <div className="flex gap-4">
@@ -893,7 +893,7 @@ const body = {
   {showVerification && (
   <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
     <form
-      onSubmit={handleVerificationSubmit}
+      onSubmit={handleVerifySubmit}
       className="bg-gray-800 p-6 rounded-2xl w-80 space-y-4 relative"
     >
       <h2 className="text-xl font-bold text-center">Verify Email</h2>
@@ -916,7 +916,7 @@ const body = {
       </button>
       <button
         type="button"
-        onClick={() => setShowVerification(false)}
+        onClick={() => setShowVerify(false)}
         className="absolute top-2 right-2 text-gray-400 hover:text-white"
       >
         ✕
