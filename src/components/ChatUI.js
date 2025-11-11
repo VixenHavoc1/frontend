@@ -711,7 +711,7 @@ const body = {
               "Your AI wellbeing companion for calm reflection 🌿"}
           </p>
         </div>
-
+   
         {/* Messages */}
         {messages.map((msg, index) => (
           <motion.div
@@ -784,6 +784,85 @@ const body = {
         Send
       </button>
     </div>
+    {/* Signup Modal */}
+{showSignup && (
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <form
+      onSubmit={handleSignupSubmit}
+      className="bg-gray-800 p-6 rounded-2xl w-80 space-y-4 relative"
+    >
+      <h2 className="text-xl font-bold text-center">Sign Up</h2>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
+        className="w-full p-2 rounded bg-gray-700 text-white"
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
+        className="w-full p-2 rounded bg-gray-700 text-white"
+      />
+      {error && <p className="text-red-400 text-sm">{error}</p>}
+      <button
+        type="submit"
+        className="bg-teal-500 hover:bg-teal-400 text-white w-full py-2 rounded"
+      >
+        Sign Up
+      </button>
+      <button
+        type="button"
+        onClick={() => setShowSignup(false)}
+        className="absolute top-2 right-2 text-gray-400 hover:text-white"
+      >
+        ✕
+      </button>
+    </form>
+  </div>
+)}
+
+{/* Login Modal */}
+{showLogin && (
+  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <form
+      onSubmit={handleLoginSubmit}
+      className="bg-gray-800 p-6 rounded-2xl w-80 space-y-4 relative"
+    >
+      <h2 className="text-xl font-bold text-center">Log In</h2>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
+        className="w-full p-2 rounded bg-gray-700 text-white"
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
+        className="w-full p-2 rounded bg-gray-700 text-white"
+      />
+      {error && <p className="text-red-400 text-sm">{error}</p>}
+      <button
+        type="submit"
+        className="bg-teal-500 hover:bg-teal-400 text-white w-full py-2 rounded"
+      >
+        Log In
+      </button>
+      <button
+        type="button"
+        onClick={() => setShowLogin(false)}
+        className="absolute top-2 right-2 text-gray-400 hover:text-white"
+      >
+        ✕
+      </button>
+    </form>
+  </div>
+)}
 
     {/* AI Disclaimer Modal (replaces Age Verification) */}
     {showAgeModal && (
