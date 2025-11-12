@@ -5,154 +5,148 @@ import { useState, useEffect } from "react";
 import AuthModals from "./AuthModals";
 
 export default function BotSelection({ onSelect }) {
+  // ✅ modal states
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // ✅ Set auth state safely on client side
   useEffect(() => {
     setIsAuthenticated(!!localStorage.getItem("access_token"));
   }, []);
 
   function handleLogout() {
-    localStorage.clear();
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userId");
+
     setIsAuthenticated(false);
   }
 
-  const companions = [
-    {
-      name: "Luna",
-      vibe: "Calm • Reflective & Gentle",
-      image:
-        "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Kai",
-      vibe: "Supportive • Uplifting & Insightful",
-      image:
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Willow",
-      vibe: "Empathetic • Grounded & Nature-Loving",
-      image:
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Sol",
-      vibe: "Warm • Motivational & Optimistic",
-      image:
-        "https://images.unsplash.com/photo-1470770903676-69b98201ea1c?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Aria",
-      vibe: "Mindful • Kind & Understanding",
-      image:
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
-    },
+  const girlfriends = [
+    { name: "Lily", vibe: "Submissive • Sweet & Caring", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic10.png" },
+    { name: "Raven", vibe: "Teasing • Playful & Bold", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic12.png" },
+    { name: "Plaksha", vibe: "Toxic • Possessive & Intense", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic11.png" },
+    { name: "Zara", vibe: "Confident • Dominant & Seductive", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic15.png" },
+    { name: "Mia", vibe: "Innocent • Shy & Curious", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/pic16.png" },
   ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-[#d3f2e8] via-[#b8e0dc] to-[#a4c7e3] text-gray-900 relative">
-      {/* Soft overlay */}
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center opacity-20"></div>
+  const roleplays = [
+    { name: "Aria", vibe: "Strict yet caring teacher", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p2.png" },
+    { name: "Elena", vibe: "Comforting and gentle nurse", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p3.png" },
+    { name: "Nova", vibe: "Nerdy, funny, teasing gamer girl", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p5.png" },
+    { name: "Selene", vibe: "Elegant and confident model", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p1.png" },
+    { name: "Kara", vibe: "Professional and flirty secretary", image: "https://rehcxrsbpawciqsfgiop.supabase.co/storage/v1/object/public/assets/pics/p4.png" },
+  ];
 
-      {/* Header */}
-      <header className="relative z-10 p-6 border-b border-white/30 backdrop-blur-sm flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-wide text-[#1e3a34]">
-          VOXELLA 🌿
-        </h1>
-        <div className="flex gap-3">
-          {!isAuthenticated ? (
-            <>
-              <button
-                onClick={() => setShowLogin(true)}
-                className="px-4 py-2 text-sm font-semibold rounded-xl border border-green-700/30 bg-green-100/30 text-green-900 hover:bg-green-200/50 transition-all"
-              >
-                Login
-              </button>
-              <button
-                onClick={() => setShowSignup(true)}
-                className="px-4 py-2 text-sm font-semibold rounded-xl border border-green-700/30 bg-green-100/30 text-green-900 hover:bg-green-200/50 transition-all"
-              >
-                Sign Up
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 text-sm font-semibold rounded-xl border border-green-700/30 bg-green-100/30 text-green-900 hover:bg-green-200/50 transition-all"
-            >
-              Logout
-            </button>
-          )}
-        </div>
-      </header>
+  const renderSection = (title, emoji, bots) => (
+    <section className="px-4 mt-8">
+      <h2 className="text-2xl sm:text-3xl font-extrabold mb-6 flex justify-center items-center gap-3 text-purple-300 tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+        <span className="text-2xl">{emoji}</span> {title}
+      </h2>
 
-      {/* Hero */}
-      <section className="relative z-10 flex flex-col items-center text-center mt-16 px-4">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-4xl sm:text-5xl font-extrabold text-[#12332b] max-w-3xl"
-        >
-          Find calm, clarity, and comfort —
-          <br />
-          your personal AI wellbeing companion.
-        </motion.h2>
-        <p className="mt-4 text-lg text-[#1f3c38]/80 max-w-xl">
-          Talk, reflect, or unwind anytime. A private space for mindfulness,
-          self-growth, and emotional support.
-        </p>
-        <div className="mt-8 flex gap-4">
-          <button
-            onClick={() => (isAuthenticated ? onSelect() : setShowSignup(true))}
-            className="px-6 py-3 bg-green-600 text-white rounded-xl shadow hover:bg-green-700 transition-all"
+      {/* Desktop grid */}
+      <div className="hidden sm:grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-6">
+        {bots.map((bot, i) => (
+          <motion.div
+            key={bot.name}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            onClick={() => onSelect(bot)}
+            className="relative rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-all duration-300 hover:-translate-y-1 bot-glow bot-sparkle"
           >
-            Start Chatting
-          </button>
-          <button className="px-6 py-3 border border-green-700/40 text-green-900 rounded-xl hover:bg-green-100 transition-all">
-            Learn More
-          </button>
-        </div>
-      </section>
+            <img src={bot.image} alt={bot.name} className="h-[320px] w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-4">
+              <h3 className="text-lg font-semibold text-white">{bot.name}</h3>
+              <p className="text-sm text-purple-200">{bot.vibe}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
 
-      {/* Companions */}
-      <section className="relative z-10 px-6 mt-20">
-        <h3 className="text-2xl sm:text-3xl font-bold text-center text-[#1f3c38] mb-8">
-          Choose Your Companion 🌊
-        </h3>
+      {/* Mobile scroll row */}
+      <div className="sm:hidden relative">
+        <div className="absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-[#0b0615] to-transparent pointer-events-none z-10" />
+        <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-[#0b0615] to-transparent pointer-events-none z-10" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 max-w-6xl mx-auto">
-          {companions.map((bot, i) => (
+        <div className="flex gap-4 overflow-x-auto pb-4 px-2 snap-x snap-mandatory scroll-smooth">
+          {bots.map((bot, i) => (
             <motion.div
               key={bot.name}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
+              transition={{ delay: i * 0.05 }}
               onClick={() => onSelect(bot)}
-              className="relative rounded-2xl overflow-hidden shadow-lg cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 bg-white/70 backdrop-blur-sm"
-            >
-              <img
-                src={bot.image}
-                alt={bot.name}
-                className="h-[280px] w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col justify-end p-4">
-                <h4 className="text-lg font-semibold text-white">{bot.name}</h4>
-                <p className="text-sm text-green-100">{bot.vibe}</p>
+              className="relative w-[65vw] sm:w-[180px] h-[220px] flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer shadow-[0_0_15px_rgba(120,60,255,0.15)] hover:shadow-[0_0_30px_rgba(165,120,255,0.25)] transition-transform duration-300 snap-center bot-glow bot-sparkle"
+     >
+              <img src={bot.image} alt={bot.name} className="h-full w-full object-cover" loading="lazy" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-3">
+                <h3 className="text-base font-semibold text-white">{bot.name}</h3>
+                <p className="text-xs text-purple-200">{bot.vibe}</p>
               </div>
             </motion.div>
           ))}
         </div>
-      </section>
+      </div>
+    </section>
+  );
 
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#05010a] via-[#0f0820] to-[#1a0e2b] text-white">
+      {/* Header */}
+      <header className="relative p-6 overflow-hidden border-b border-purple-800/40">
+        <div className="absolute inset-0 animate-aurora opacity-70" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#130824]/90 via-[#28164a]/70 to-[#130824]/90" />
+
+        <div className="relative z-10 flex justify-between items-center">
+          {/* Logo */}
+          <h1 className="text-3xl font-extrabold tracking-wide text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
+            Voxella AI
+          </h1>
+
+          {/* Auth Buttons */}
+          <div className="flex gap-3">
+            {!isAuthenticated ? (
+              <>
+                <button
+                  onClick={() => setShowLogin(true)}
+                  className="px-4 py-2 text-sm font-semibold rounded-xl border border-purple-400/40 bg-purple-800/20 text-purple-200 hover:bg-purple-700/40 hover:shadow-[0_0_15px_rgba(160,90,255,0.4)] transition-all"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => setShowSignup(true)}
+                  className="px-4 py-2 text-sm font-semibold rounded-xl border border-purple-400/40 bg-purple-800/20 text-purple-200 hover:bg-purple-700/40 hover:shadow-[0_0_15px_rgba(160,90,255,0.4)] transition-all"
+                >
+                  Sign Up
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 text-sm font-semibold rounded-xl border border-purple-400/40 bg-purple-800/20 text-purple-200 hover:bg-purple-700/40 hover:shadow-[0_0_15px_rgba(160,90,255,0.4)] transition-all"
+              >
+                Logout
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Sections */}
+      {renderSection("AI Girlfriends", "💕", girlfriends)}
+      {renderSection("Roleplays", "😈", roleplays)}
+
+      {/* ✅ Auth Modals */}
       <AuthModals
         showLogin={showLogin}
         setShowLogin={setShowLogin}
         showSignup={showSignup}
         setShowSignup={setShowSignup}
-        setIsAuthenticated={setIsAuthenticated}
+        setIsAuthenticated={setIsAuthenticated} // <- pass setter so modals can update auth
       />
     </div>
   );
